@@ -10,13 +10,13 @@
     <br/>
     <input type="button" value="Sign Up"
            onclick="location.href='${pageContext.request.contextPath}/controller?command=go_to_sign_up'">
-
     ${login_msg}
     <br/>
     ${register_msg}
     <br/>
     ${error}
     <br/>
+    ${session_id}
 </form>
 </body>
 </html>

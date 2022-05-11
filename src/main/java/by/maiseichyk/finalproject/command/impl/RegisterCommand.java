@@ -19,7 +19,8 @@ public class RegisterCommand implements Command {
     public Router execute(HttpServletRequest request) {
         Router router = new Router();
         String page;
-        HttpSession session = request.getSession();
+        UserDaoImpl userDao = UserDaoImpl.getInstance();
+        HttpSession session = request.getSession(false);
         User user = new User.UserBuilder()
                 .setLogin(request.getParameter("login"))
                 .setPassword(request.getParameter("pass"))
@@ -29,7 +30,7 @@ public class RegisterCommand implements Command {
                 .setUserRole(UserType.CLIENT)
                 .build();
         try {
-            if (UserDaoImpl.getInstance().insert(user)) {
+            if (userDao.insert(user)) {
                 session.setAttribute("user_name", request.getParameter("login"));
                 session.setAttribute("user_role", user.getRole());
                 page = PagePath.HOME;

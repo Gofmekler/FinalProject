@@ -28,7 +28,7 @@ public class PageRedirectSecurityFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpSession session = httpRequest.getSession(false);
         UserType userRole = (UserType) session.getAttribute("user_role");
-        if (userRole == null){
+        if (userRole == UserType.GUEST || userRole == null){
             session.setAttribute("register_msg", "You need to register or login firstly");//FIXME
             httpResponse.sendRedirect(httpRequest.getContextPath() + indexPath);
             return;

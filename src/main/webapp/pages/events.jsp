@@ -12,5 +12,15 @@
 </head>
 <body>
 ${events}
+<br/>
+<form action="controller">
+    <input type="hidden" name="command" value="delete_sport_event_command"/>
+    Id: <input type="text" required= "required" name="unique_event_id" value=""/>
+    <input type="submit" name="sub" value="Delete" />
+</form>
+<br/>
+<input type="button" value="Back to home page"
+       onclick="location.href='${pageContext.request.contextPath}/controller?command=go_to_home_page'">
+<br/>
 </body>
 </html>

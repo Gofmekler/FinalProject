@@ -1,6 +1,5 @@
 package by.maiseichyk.finalproject.controller.listener;
 
-import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import org.apache.logging.log4j.LogManager;
@@ -12,7 +11,7 @@ public class SessionCreateListenerImpl implements  HttpSessionListener{
     @Override
     public void sessionCreated(HttpSessionEvent se) {
         LOGGER.info("-----------------Session created--------------------" + se.getSession().getId());
-
+        LOGGER.info("-----------------Session created--------------------" + se.getSession().getServletContext());
     }
 
     @Override

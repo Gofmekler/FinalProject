@@ -19,9 +19,8 @@ public class LoginCommand implements Command {
     public Router execute(HttpServletRequest request) {
         String login = request.getParameter("login");
         String password = request.getParameter("pass");//string to constant todo
-//        String userRole = request.getParameter("role");
         UserService userService = UserServiceImpl.getInstance();
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession(false);
         Router router = new Router();
         String page = null;
         try {

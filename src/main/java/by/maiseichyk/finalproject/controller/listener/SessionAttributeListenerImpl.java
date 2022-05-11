@@ -1,6 +1,5 @@
 package by.maiseichyk.finalproject.controller.listener;
 
-import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import org.apache.logging.log4j.LogManager;

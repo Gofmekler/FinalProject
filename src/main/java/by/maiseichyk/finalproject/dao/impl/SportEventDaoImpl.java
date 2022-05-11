@@ -36,13 +36,13 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
         boolean match;
         try (Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(INSERT_EVENT);
-            statement.setString(1, sportEvent.getUnique_event_id());
+            statement.setString(1, sportEvent.getUniqueEventId());
             statement.setString(2, sportEvent.getEventType().getValue());
             statement.setString(3, sportEvent.getFirstTeam());
             statement.setString(4, sportEvent.getFirstTeamRatio());
             statement.setString(5, sportEvent.getSecondTeam());
             statement.setString(6, sportEvent.getSecondTeamRatio());
-            statement.setString(7, sportEvent.getEvent_date());
+            statement.setString(7, sportEvent.getEventDate());
             statement.executeUpdate();
             match = true;
         } catch (SQLException e) {
@@ -56,7 +56,7 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
         boolean match;
         try (Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(DELETE_EVENT);
-            statement.setString(1, sportEvent.getUnique_event_id());
+            statement.setString(1, sportEvent.getUniqueEventId());
             statement.executeUpdate();
             match = true;
         } catch (SQLException e) {
@@ -81,20 +81,22 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
     }
 
     @Override
-    public SportEvent update(SportEvent sportEvent) throws DaoException {
+    public boolean update(SportEvent sportEvent) throws DaoException {
+        boolean match;
         try (Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(INSERT_EVENT);
+            PreparedStatement statement = connection.prepareStatement(UPDATE_EVENT);
             statement.setString(2, sportEvent.getEventType().getValue());
             statement.setString(3, sportEvent.getFirstTeam());
             statement.setString(4, sportEvent.getFirstTeamRatio());
             statement.setString(5, sportEvent.getSecondTeam());
             statement.setString(6, sportEvent.getSecondTeamRatio());
-            statement.setString(7, sportEvent.getEvent_date());
+            statement.setString(7, sportEvent.getEventDate());
             statement.executeUpdate();
+            match = true;
         } catch (SQLException e) {
             throw new DaoException("Can't update sportEvent info to Database. " + e);
         }
-        return sportEvent;
+        return match;
     }
 
     @Override
@@ -102,7 +104,7 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
         List<SportEvent> sportEventList;
         try (Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(ID_EVENT_SELECT);
-            preparedStatement.setString(1, event.getUnique_event_id());
+            preparedStatement.setString(1, event.getUniqueEventId());
             ResultSet resultSet = preparedStatement.executeQuery();
             EventMapper eventMapper = EventMapper.getInstance();
             sportEventList = eventMapper.retrieve(resultSet);

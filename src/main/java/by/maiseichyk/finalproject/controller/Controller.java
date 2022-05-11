@@ -27,21 +27,20 @@ public class Controller extends HttpServlet {
         String commandStr = request.getParameter("command");
         Command command = CommandType.define(commandStr);
         try {
-        Router router;
-        router = command.execute(request);
-        LOGGER.info("get type router " + request.getContextPath() + router.getPage());
-        switch (router.getType()) {
-            case FORWARD:
-                request.getRequestDispatcher(router.getPage()).forward(request, response);
-                break;
-            case REDIRECT:
-                response.sendRedirect(request.getContextPath() + router.getPage());
-                break;
-            default:
-                response.sendError(500, "Wrong router type.");
-                break;
-        }
-//            response.sendRedirect(router.getPage());
+            Router router;
+            router = command.execute(request);
+            LOGGER.info("get type router " + request.getContextPath() + router.getPage());
+            switch (router.getType()) {
+                case FORWARD:
+                    request.getRequestDispatcher(router.getPage()).forward(request, response);
+                    break;
+                case REDIRECT:
+                    response.sendRedirect(request.getContextPath() + router.getPage());
+                    break;
+                default:
+                    response.sendError(500, "Wrong router type.");
+                    break;
+            }
         } catch (CommandException e) {
             request.setAttribute("error", e.getMessage());
         }
@@ -52,8 +51,7 @@ public class Controller extends HttpServlet {
     }
 
     public void destroy() {
-        LOGGER.info("Servlet and driver are destroyed --- " + this.getServletName());
+        LOGGER.info("destroyed --- " + this.getServletName());
         ConnectionPool.getInstance().destroyPool();
-        ConnectionPool.getInstance().deregisterDriver();
     }
 }

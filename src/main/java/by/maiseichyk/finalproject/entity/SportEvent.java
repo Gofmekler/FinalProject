@@ -8,8 +8,8 @@ public class SportEvent extends AbstractEntity {
     private SportEventType eventType;
     private String firstTeamRatio;//migrate to double
     private String secondTeamRatio;
-    private String event_date;
-    private String unique_event_id;
+    private String eventDate;
+    private String uniqueEventId;
 
     public SportEvent() {
     }
@@ -54,20 +54,72 @@ public class SportEvent extends AbstractEntity {
         this.secondTeamRatio = secondTeamRatio;
     }
 
-    public String getEvent_date() {
-        return event_date;
+    public String getEventDate() {
+        return eventDate;
     }
 
-    public void setEvent_date(String event_date) {
-        this.event_date = event_date;
+    public void setEventDate(String eventDate) {
+        this.eventDate = eventDate;
     }
 
-    public String getUnique_event_id() {
-        return unique_event_id;
+    public String getUniqueEventId() {
+        return uniqueEventId;
     }
 
-    public void setUnique_event_id(String unique_event_id) {
-        this.unique_event_id = unique_event_id;
+    public void setUniqueEventId(String uniqueEventId) {
+        this.uniqueEventId = uniqueEventId;
+    }
+
+    public static class SportEventBuilder {
+        private final SportEvent sportEvent;
+
+        public SportEventBuilder() {
+            sportEvent = new SportEvent();
+        }
+
+        public SportEventBuilder setFirstTeam(String firstTeam) {
+            sportEvent.firstTeam = firstTeam;
+            return this;
+        }
+
+
+        public SportEventBuilder setSecondTeam(String secondTeam) {
+            sportEvent.secondTeam = secondTeam;
+            return this;
+        }
+
+
+        public SportEventBuilder setEventType(SportEventType eventType) {
+            sportEvent.eventType = eventType;
+            return this;
+        }
+
+
+        public SportEventBuilder setFirstTeamRatio(String firstTeamRatio) {
+            sportEvent.firstTeamRatio = firstTeamRatio;
+            return this;
+        }
+
+
+        public SportEventBuilder setSecondTeamRatio(String secondTeamRatio) {
+            sportEvent.secondTeamRatio = secondTeamRatio;
+            return this;
+        }
+
+        public SportEventBuilder setEventDate(String eventDate) {
+            sportEvent.eventDate = eventDate;
+            return this;
+        }
+
+
+        public SportEventBuilder setUniqueEventId(String uniqueEventId) {
+            sportEvent.uniqueEventId = uniqueEventId;
+            return this;
+        }
+
+        public SportEvent build() {
+            return sportEvent;
+        }
     }
 
     @Override
@@ -75,12 +127,12 @@ public class SportEvent extends AbstractEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SportEvent event = (SportEvent) o;
-        return firstTeam.equals(event.firstTeam) && secondTeam.equals(event.secondTeam) && eventType == event.eventType && firstTeamRatio.equals(event.firstTeamRatio) && secondTeamRatio.equals(event.secondTeamRatio) && event_date.equals(event.event_date) && unique_event_id.equals(event.unique_event_id);
+        return firstTeam.equals(event.firstTeam) && secondTeam.equals(event.secondTeam) && eventType == event.eventType && firstTeamRatio.equals(event.firstTeamRatio) && secondTeamRatio.equals(event.secondTeamRatio) && eventDate.equals(event.eventDate) && uniqueEventId.equals(event.uniqueEventId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(firstTeam, secondTeam, eventType, firstTeamRatio, secondTeamRatio, event_date, unique_event_id);
+        return Objects.hash(firstTeam, secondTeam, eventType, firstTeamRatio, secondTeamRatio, eventDate, uniqueEventId);
     }
 
     @Override
@@ -91,8 +143,8 @@ public class SportEvent extends AbstractEntity {
                 ", eventType=" + eventType +
                 ", firstTeamRatio='" + firstTeamRatio + '\'' +
                 ", secondTeamRatio='" + secondTeamRatio + '\'' +
-                ", event_date='" + event_date + '\'' +
-                ", unique_event_id='" + unique_event_id + '\'' +
+                ", event_date='" + eventDate + '\'' +
+                ", unique_event_id='" + uniqueEventId + '\'' +
                 '}' + '\n';
     }
 }

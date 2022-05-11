@@ -13,7 +13,8 @@ import static by.maiseichyk.finalproject.dao.ColumnName.*;
 
 public class EventMapper implements Mapper<SportEvent> {
     private static EventMapper instance = new EventMapper();
-    private EventMapper(){
+
+    private EventMapper() {
     }
 
     public static EventMapper getInstance() {
@@ -23,16 +24,17 @@ public class EventMapper implements Mapper<SportEvent> {
     @Override
     public List<SportEvent> retrieve(ResultSet resultSet) throws SQLException {
         List<SportEvent> sportEventList = new ArrayList<>();
-        while(resultSet.next()){
-        SportEvent event = new SportEvent();
-        event.setUnique_event_id(resultSet.getString(UNIQUE_EVENT_ID));
-        event.setEventType(SportEventType.valueOf(resultSet.getString(EVENT_TYPE)));
-        event.setFirstTeam(resultSet.getString(FIRST_TEAM));
-        event.setFirstTeamRatio(resultSet.getString(FIRST_TEAM_RATIO));
-        event.setSecondTeam(resultSet.getString(SECOND_TEAM));
-        event.setSecondTeamRatio(resultSet.getString(SECOND_TEAM_RATIO));
-        event.setEvent_date(resultSet.getString(EVENT_DATE));
-        sportEventList.add(event);
+        while (resultSet.next()) {
+            SportEvent event = new SportEvent.SportEventBuilder()
+                    .setUniqueEventId(resultSet.getString(UNIQUE_EVENT_ID))
+                    .setEventType(SportEventType.valueOf(resultSet.getString(EVENT_TYPE)))
+                    .setFirstTeam(resultSet.getString(FIRST_TEAM))
+                    .setFirstTeamRatio(resultSet.getString(FIRST_TEAM_RATIO))
+                    .setSecondTeam(resultSet.getString(SECOND_TEAM))
+                    .setSecondTeamRatio(resultSet.getString(SECOND_TEAM_RATIO))
+                    .setEventDate(resultSet.getString(EVENT_DATE))
+                    .build();
+            sportEventList.add(event);
         }
         return sportEventList;
     }

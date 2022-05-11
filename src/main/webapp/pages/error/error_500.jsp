@@ -17,6 +17,5 @@ ${pageContext.errorData.requestURI}
 ${pageContext.errorData.servletName}
 ${pageContext.errorData.statusCode}
 ${pageContext.errorData.exception}
-
 </body>
 </html>

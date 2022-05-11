@@ -11,9 +11,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ConnectionPool {
+    private static final int POOL_SIZE = 8;
     private static ConnectionPool instance = new ConnectionPool();
-    private BlockingQueue<Connection> freeConnections = new LinkedBlockingQueue<>(8);//const + add new blocking queue
-    private BlockingQueue<Connection> usedConnections = new LinkedBlockingQueue<>(8);//new queue for checking
+    private BlockingQueue<Connection> freeConnections = new LinkedBlockingQueue<>(POOL_SIZE);//const + add new blocking queue
+    private BlockingQueue<Connection> usedConnections = new LinkedBlockingQueue<>(POOL_SIZE);//new queue for checking
     private static ReentrantLock reentrantLock = new ReentrantLock();
 
     {//FIXME non-static
@@ -29,7 +30,7 @@ public class ConnectionPool {
         Properties prop = new Properties();
         prop.put("user", "root"); //todo вынести в файл
         prop.put("password", "1352295");
-        for (int i = 0; i < 8; i++) {//const 8
+        for (int i = 0; i < POOL_SIZE; i++) {//const 8
             Connection connection;
             try {
                 connection = DriverManager.getConnection(url, prop);
@@ -49,8 +50,6 @@ public class ConnectionPool {
         } finally {
             reentrantLock.unlock();
         }
-//        return instance;
-//        instance = new ConnectionPool();//reentrant lock
         return instance;//todo double check multithreading
     }
 
@@ -76,7 +75,7 @@ public class ConnectionPool {
     }
 
     public void destroyPool() {
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < POOL_SIZE; i++) {
             try {
                 freeConnections.take().close();
             } catch (SQLException | InterruptedException e) {

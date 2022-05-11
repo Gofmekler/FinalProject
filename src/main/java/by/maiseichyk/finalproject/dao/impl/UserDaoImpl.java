@@ -67,7 +67,7 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
             ResultSet resultSet = preparedStatement.executeQuery();
             UserMapper userMapper = UserMapper.getInstance();
             users = userMapper.retrieve(resultSet);
-        } catch(SQLException exception){
+        } catch (SQLException exception) {
 //                LOGGER.error("Error has occurred while finding users: " + exception);
             throw new DaoException("Error has occurred while finding users: ", exception);
         }
@@ -75,7 +75,8 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     }
 
     @Override
-    public User update(User user) throws DaoException {
+    public boolean update(User user) throws DaoException {
+        boolean status;
         try (Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(INSERT_USER);
             statement.setString(2, user.getPassword());
@@ -84,10 +85,11 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
             statement.setString(5, user.getEmail());
             statement.setString(6, user.getRole().getValue());
             statement.executeUpdate();
+            status = true;
         } catch (SQLException e) {
             throw new DaoException("Can't update user info to Database. " + e);
         }
-        return user;
+        return status;
     }
 
     @Override
@@ -99,10 +101,10 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
             ResultSet resultSet = preparedStatement.executeQuery();
             UserMapper userMapper = UserMapper.getInstance();
             users = userMapper.retrieve(resultSet);
-            } catch(SQLException exception){
+        } catch (SQLException exception) {
 //                LOGGER.error("Error has occurred while finding user by login: " + exception);
-                throw new DaoException("Error has occurred while finding user by login: ", exception);
-            }
-            return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
+            throw new DaoException("Error has occurred while finding user by login: ", exception);
         }
+        return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
     }
+}

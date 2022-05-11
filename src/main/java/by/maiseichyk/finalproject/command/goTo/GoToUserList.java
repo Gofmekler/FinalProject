@@ -20,7 +20,7 @@ public class GoToUserList implements Command {
     @Override
     public Router execute(HttpServletRequest request) throws CommandException {
         UserDaoImpl userDao = UserDaoImpl.getInstance();
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession(false);
         String role = session.getAttribute("user_role").toString();
         LOGGER.info("User role - " + session.getAttribute("user_role"));
         if (role.toUpperCase().equals(UserType.ADMIN.getValue().toUpperCase())) {

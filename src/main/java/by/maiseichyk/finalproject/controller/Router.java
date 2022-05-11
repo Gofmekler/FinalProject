@@ -1,7 +1,9 @@
 package by.maiseichyk.finalproject.controller;
 
+import static by.maiseichyk.finalproject.command.PagePath.WELCOME;
+
 public class Router {
-    private String page = "/index.jsp";
+    private String page = WELCOME;
     private Type type = Type.FORWARD;
 
     public enum Type{

@@ -1,4 +1,4 @@
-package by.maiseichyk.finalproject.command.sportEvent;
+package by.maiseichyk.finalproject.command.adminCommand;
 
 import by.maiseichyk.finalproject.command.Command;
 import by.maiseichyk.finalproject.controller.Router;
