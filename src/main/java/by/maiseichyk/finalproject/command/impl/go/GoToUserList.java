@@ -1,7 +1,6 @@
-package by.maiseichyk.finalproject.command.goTo;
+package by.maiseichyk.finalproject.command.impl.go;
 
 import by.maiseichyk.finalproject.command.Command;
-import by.maiseichyk.finalproject.command.PagePath;
 import by.maiseichyk.finalproject.controller.Router;
 import by.maiseichyk.finalproject.dao.impl.UserDaoImpl;
 import by.maiseichyk.finalproject.entity.User;
@@ -15,6 +14,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
+import static by.maiseichyk.finalproject.command.PagePath.*;
+import static by.maiseichyk.finalproject.controller.Router.Type.*;
+
 public class GoToUserList implements Command {
     private static final Logger LOGGER = LogManager.getLogger();
     @Override
@@ -23,16 +25,16 @@ public class GoToUserList implements Command {
         HttpSession session = request.getSession(false);
         String role = session.getAttribute("user_role").toString();
         LOGGER.info("User role - " + session.getAttribute("user_role"));
-        if (role.toUpperCase().equals(UserType.ADMIN.getValue().toUpperCase())) {
+        if (role.equals(UserType.ADMIN.toString().toUpperCase())) {
             try {
                 List<User> users = userDao.findAll();
                 session.setAttribute("users", users);
-                return new Router(PagePath.USERS_LIST, Router.Type.FORWARD);
+                return new Router(USERS_LIST, FORWARD);
             } catch (DaoException e) {
-                e.printStackTrace();
+                return new Router(ERROR_500, REDIRECT);
             }
         }
         request.setAttribute("err_msg", "You don't have permission to this command.");
-        return new Router(PagePath.HOME, Router.Type.FORWARD);
+        return new Router(HOME, FORWARD);
     }
 }

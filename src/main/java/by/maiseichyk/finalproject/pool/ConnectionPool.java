@@ -1,23 +1,34 @@
 package by.maiseichyk.finalproject.pool;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ConnectionPool {
-    private static final int POOL_SIZE = 8;
+    private static final String POOL_PROPERTY_FILE = "database";
+    private static final String DATABASE_URL_PROPERTY = "url";
+    private static final String DATABASE_USER_PROPERTY = "user";
+    private static final String DATABASE_PASSWORD_PROPERTY = "password";
+    private static final Logger LOGGER = LogManager.getLogger();
+    private static final AtomicBoolean isCreated = new AtomicBoolean(false);
+    private static final int DEFAULT_POOL_SIZE = 8;
     private static ConnectionPool instance = new ConnectionPool();
-    private BlockingQueue<Connection> freeConnections = new LinkedBlockingQueue<>(POOL_SIZE);//const + add new blocking queue
-    private BlockingQueue<Connection> usedConnections = new LinkedBlockingQueue<>(POOL_SIZE);//new queue for checking
+    private BlockingQueue<ProxyConnection> freeConnections = new LinkedBlockingQueue<>(DEFAULT_POOL_SIZE);//const + add new blocking queue
+    private BlockingQueue<ProxyConnection> usedConnections = new LinkedBlockingQueue<>(DEFAULT_POOL_SIZE);//new queue for checking
     private static ReentrantLock reentrantLock = new ReentrantLock();
 
-    {//FIXME non-static
+    {
         try {
             DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
         } catch (SQLException e) {
@@ -26,35 +37,43 @@ public class ConnectionPool {
     }
 
     private ConnectionPool() {
-        String url = "jdbc:mysql://localhost:3306/datatest";
-        Properties prop = new Properties();
-        prop.put("user", "root"); //todo вынести в файл
-        prop.put("password", "1352295");
-        for (int i = 0; i < POOL_SIZE; i++) {//const 8
-            Connection connection;
+        ResourceBundle resourceBundle = ResourceBundle.getBundle(POOL_PROPERTY_FILE);
+        String url = resourceBundle.getString(DATABASE_URL_PROPERTY);
+        String user = resourceBundle.getString(DATABASE_USER_PROPERTY);
+        String password = resourceBundle.getString(DATABASE_PASSWORD_PROPERTY);
+        for (int i = 0; i < DEFAULT_POOL_SIZE; i++) {
             try {
-                connection = DriverManager.getConnection(url, prop);
+                Connection connection = DriverManager.getConnection(url, user, password);
+                ProxyConnection proxyConnection = new ProxyConnection(connection);
+                freeConnections.add(proxyConnection);
             } catch (SQLException e) {
-                throw new ExceptionInInitializerError(e.getMessage());//todo log может не дать соединение
+                LOGGER.error("Error has occurred while creating connection: " + e);
+//                throw new ExceptionInInitializerError(e.getMessage());//todo log может не дать соединение
             }
-            freeConnections.add(connection);
         }
+        if (freeConnections.isEmpty()) {
+            LOGGER.fatal("Error: no connections were created");
+            throw new RuntimeException("Error: no connections were created");
+        }
+        LOGGER.info("{} connections were created", freeConnections.size());
     }
 
     public static ConnectionPool getInstance() {
-        try {
-            reentrantLock.lock();
-            if (instance == null) {
-                instance = new ConnectionPool();
+        if (!isCreated.get()) {
+            try {
+                reentrantLock.lock();
+                if (instance == null) {
+                    instance = new ConnectionPool();
+                }
+            } finally {
+                reentrantLock.unlock();
             }
-        } finally {
-            reentrantLock.unlock();
         }
-        return instance;//todo double check multithreading
+        return instance;
     }
 
     public Connection getConnection() {
-        Connection connection = null;
+        ProxyConnection connection = null;
         try {
             connection = freeConnections.take();
             usedConnections.put(connection);
@@ -68,16 +87,16 @@ public class ConnectionPool {
         //todo check connection
         try {
             usedConnections.remove(connection);
-            freeConnections.put(connection);
+            freeConnections.put((ProxyConnection) connection);
         } catch (InterruptedException e) {
             e.printStackTrace();//todo log
         }
     }
 
     public void destroyPool() {
-        for (int i = 0; i < POOL_SIZE; i++) {
+        for (int i = 0; i < DEFAULT_POOL_SIZE; i++) {
             try {
-                freeConnections.take().close();
+                freeConnections.take().reallyClose();
             } catch (SQLException | InterruptedException e) {
                 e.printStackTrace();//todo log
             }

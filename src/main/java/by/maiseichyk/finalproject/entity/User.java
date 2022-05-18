@@ -9,6 +9,7 @@ public class User extends AbstractEntity {
     private String lastName;
     private UserType role;
     private String email;
+    private double balance;
 
     public User() {
     }
@@ -61,6 +62,14 @@ public class User extends AbstractEntity {
         this.email = email;
     }
 
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
     public static class UserBuilder {
         private final User user;
 
@@ -97,6 +106,11 @@ public class User extends AbstractEntity {
             return this;
         }
 
+        public  UserBuilder setBalance(double balance){
+            user.balance = balance;
+            return this;
+        }
+
         public User build() {
             return user;
         }
@@ -107,12 +121,12 @@ public class User extends AbstractEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return login.equals(user.login) && password.equals(user.password) && firstName.equals(user.firstName) && lastName.equals(user.lastName) && role == user.role && email.equals(user.email);
+        return Double.compare(user.balance, balance) == 0 && Objects.equals(login, user.login) && Objects.equals(password, user.password) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && role == user.role && Objects.equals(email, user.email);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(login, password, firstName, lastName, role, email);
+        return Objects.hash(login, password, firstName, lastName, role, email, balance);
     }
 
     @Override

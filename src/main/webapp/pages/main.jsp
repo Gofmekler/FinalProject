@@ -26,8 +26,6 @@
     <input type="button" value="Events"
            onclick="location.href='${pageContext.request.contextPath}/controller?command=go_to_event'">
     <br/>
-    ${events}
-    <br/>
 ${err_msg}
 <br/>
 </body>

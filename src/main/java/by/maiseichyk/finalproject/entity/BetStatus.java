@@ -1,10 +1,9 @@
 package by.maiseichyk.finalproject.entity;
 
-public enum SportEventType {
-    CYBER,
-    FOOTBALL,
-    VOLLEYBALL,
-    BASKETBALL;
+public enum BetStatus {
+    WIN,
+    LOSE,
+    ACTIVE;
 
     @Override
     public String toString() {

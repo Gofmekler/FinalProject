@@ -26,7 +26,13 @@ public final class ColumnName {
 
     public static final String SECOND_TEAM_RATIO = "second_team_ratio";
 
-    public static final String EVENT_DATE = "event_date";
+    public static final String BET_ID = "bet_id";
+
+    public static final String BET_DATE = "bet-date";
+
+    public static final String BET_AMOUNT = "event_date";
+
+    public static final String BET_STATUS = "event_date";
 
     private ColumnName() {
     }

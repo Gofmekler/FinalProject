@@ -126,8 +126,8 @@ public class SportEvent extends AbstractEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SportEvent event = (SportEvent) o;
-        return firstTeam.equals(event.firstTeam) && secondTeam.equals(event.secondTeam) && eventType == event.eventType && firstTeamRatio.equals(event.firstTeamRatio) && secondTeamRatio.equals(event.secondTeamRatio) && eventDate.equals(event.eventDate) && uniqueEventId.equals(event.uniqueEventId);
+        SportEvent that = (SportEvent) o;
+        return Objects.equals(firstTeam, that.firstTeam) && Objects.equals(secondTeam, that.secondTeam) && eventType == that.eventType && Objects.equals(firstTeamRatio, that.firstTeamRatio) && Objects.equals(secondTeamRatio, that.secondTeamRatio) && Objects.equals(eventDate, that.eventDate) && Objects.equals(uniqueEventId, that.uniqueEventId);
     }
 
     @Override

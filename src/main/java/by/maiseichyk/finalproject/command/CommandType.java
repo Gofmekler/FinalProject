@@ -1,16 +1,16 @@
 package by.maiseichyk.finalproject.command;
 
-import by.maiseichyk.finalproject.command.goTo.*;
+import by.maiseichyk.finalproject.command.impl.go.*;
 import by.maiseichyk.finalproject.command.impl.DefaultCommand;
 import by.maiseichyk.finalproject.command.impl.LoginCommand;
 import by.maiseichyk.finalproject.command.impl.LogoutCommand;
 import by.maiseichyk.finalproject.command.impl.RegisterCommand;
-import by.maiseichyk.finalproject.command.adminCommand.AddSportEventCommand;
-import by.maiseichyk.finalproject.command.adminCommand.DeleteSportEventCommand;
-import by.maiseichyk.finalproject.command.adminCommand.UpdateSportEventCommand;
-import by.maiseichyk.finalproject.command.adminCommand.AddUserCommand;
-import by.maiseichyk.finalproject.command.adminCommand.UpdateUserInfoCommand;
-import by.maiseichyk.finalproject.command.adminCommand.DeleteUserCommand;
+import by.maiseichyk.finalproject.command.impl.admin.AddSportEventCommand;
+import by.maiseichyk.finalproject.command.impl.admin.DeleteSportEventCommand;
+import by.maiseichyk.finalproject.command.impl.admin.UpdateSportEventCommand;
+import by.maiseichyk.finalproject.command.impl.admin.AddUserCommand;
+import by.maiseichyk.finalproject.command.impl.admin.UpdateUserInfoCommand;
+import by.maiseichyk.finalproject.command.impl.admin.DeleteUserCommand;
 
 public enum CommandType {
     REGISTER(new RegisterCommand()),
@@ -28,6 +28,7 @@ public enum CommandType {
     GO_TO_SIGN_UP(new GoToSignUp()),
     GO_TO_USER_LIST(new GoToUserList()),
     GO_TO_HOME_PAGE(new GoToHomePage()),
+    GO_TO_WELCOME_PAGE(new GoToWelcomePage()),
     DEFAULT(new DefaultCommand());
     Command command;
 
@@ -36,7 +37,10 @@ public enum CommandType {
     }
 
     public static Command define(String commandStr) {
-        CommandType current = CommandType.valueOf(commandStr.toUpperCase());
+        CommandType current = DEFAULT;
+        if (commandStr != null) {
+            current = CommandType.valueOf(commandStr.toUpperCase());
+        }
         return current.command;
     }
 }

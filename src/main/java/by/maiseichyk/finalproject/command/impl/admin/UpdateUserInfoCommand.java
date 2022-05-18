@@ -1,4 +1,4 @@
-package by.maiseichyk.finalproject.command.adminCommand;
+package by.maiseichyk.finalproject.command.impl.admin;
 
 import by.maiseichyk.finalproject.command.Command;
 import by.maiseichyk.finalproject.controller.Router;
@@ -19,7 +19,6 @@ public class UpdateUserInfoCommand implements Command {
     @Override
     public Router execute(HttpServletRequest request) throws CommandException {
         HttpSession session = request.getSession(false);
-        Router router = null;
         UserDaoImpl userDao = UserDaoImpl.getInstance();
         User user = new User.UserBuilder()
                 .setLogin(request.getParameter(USER_LOGIN))
@@ -32,14 +31,14 @@ public class UpdateUserInfoCommand implements Command {
         try {
             if (userDao.update(user)) {
                 session.setAttribute("command_msg", "Updated successfully");
+
             } else {
                 session.setAttribute("command_msg", "Cannot update user's info");
             }
         } catch (DaoException e) {
-            router.setPage(ERROR_500);
             session.setAttribute("error_msg", "Exception in DAO " + e);
+            return new Router(ERROR_500, Router.Type.REDIRECT);
         }
-        router.setPage(USERS_LIST);
-        return router;
+        return new Router(USERS_LIST, Router.Type.FORWARD);
     }
 }

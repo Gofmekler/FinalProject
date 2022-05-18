@@ -14,31 +14,30 @@ import jakarta.servlet.http.HttpSession;
 
 import java.util.Optional;
 
+import static by.maiseichyk.finalproject.command.PagePath.*;
+import static by.maiseichyk.finalproject.controller.Router.Type.*;
+
 public class LoginCommand implements Command {
     @Override
     public Router execute(HttpServletRequest request) {
         String login = request.getParameter("login");
-        String password = request.getParameter("pass");//string to constant todo
+        String password = request.getParameter("password");//string to constant todo
         UserService userService = UserServiceImpl.getInstance();
         HttpSession session = request.getSession(false);
-        Router router = new Router();
-        String page = null;
         try {
             Optional<User> user = userService.findUser(login,password);
             if (user.isPresent()) {
                 session.setAttribute("user_name", login);
                 session.setAttribute("user_role", user.get().getRole());
                 session.setAttribute("user", user.get());
-                page = PagePath.HOME;
+                return new Router(HOME, FORWARD);
             } else {
                 request.setAttribute("login_msg", "Invalid password or login");
-                page = PagePath.WELCOME;
+                return new Router(WELCOME, FORWARD);
             }
-            session.setAttribute("current_page", page);
         } catch (ServiceException e) {
-            e.printStackTrace();//default page maybe
+            //log todo
+            return new Router(ERROR_500, REDIRECT);
         }
-        router.setPage(page);
-        return router;
     }
 }

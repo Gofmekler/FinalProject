@@ -31,7 +31,7 @@ public class UserMapper implements Mapper<User> {
                     .setName(resultSet.getString(USER_NAME))
                     .setLastName(resultSet.getString(USER_LASTNAME))
                     .setEmail(resultSet.getString(USER_EMAIL))
-                    .setUserRole(UserType.valueOf(resultSet.getString(USER_ROLE).toUpperCase()))
+                    .setUserRole(UserType.valueOf(resultSet.getString(USER_ROLE)))
                     .build();
             userList.add(user);
         }

@@ -1,7 +1,10 @@
 package by.maiseichyk.finalproject.command.impl;
 
 import by.maiseichyk.finalproject.command.Command;
-import by.maiseichyk.finalproject.command.PagePath;
+
+import static by.maiseichyk.finalproject.command.PagePath.*;
+import static by.maiseichyk.finalproject.controller.Router.Type.*;
+
 import by.maiseichyk.finalproject.controller.Router;
 import by.maiseichyk.finalproject.dao.impl.UserDaoImpl;
 import by.maiseichyk.finalproject.entity.User;
@@ -33,16 +36,15 @@ public class RegisterCommand implements Command {
             if (userDao.insert(user)) {
                 session.setAttribute("user_name", request.getParameter("login"));
                 session.setAttribute("user_role", user.getRole());
-                page = PagePath.HOME;
+                session.setAttribute("user", user);
+                return new Router(HOME, FORWARD);
             } else {
                 request.setAttribute("register_msg", "Cannot register");
-                page = PagePath.WELCOME;
+                return new Router(WELCOME, FORWARD);
             }
         } catch (DaoException e) {
-            page = PagePath.ERROR_500;
             session.setAttribute("error", "Can't register new user.");
+            return new Router(ERROR_500, REDIRECT);
         }
-        router.setPage(page);
-        return router;
     }
 }

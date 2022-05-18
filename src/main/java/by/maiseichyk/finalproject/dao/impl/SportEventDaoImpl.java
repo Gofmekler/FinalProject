@@ -3,10 +3,8 @@ package by.maiseichyk.finalproject.dao.impl;
 import by.maiseichyk.finalproject.dao.BaseDao;
 import by.maiseichyk.finalproject.dao.SportEventDao;
 import by.maiseichyk.finalproject.entity.SportEvent;
-import by.maiseichyk.finalproject.entity.User;
 import by.maiseichyk.finalproject.exception.DaoException;
 import by.maiseichyk.finalproject.mapper.impl.EventMapper;
-import by.maiseichyk.finalproject.mapper.impl.UserMapper;
 import by.maiseichyk.finalproject.pool.ConnectionPool;
 
 import java.sql.Connection;
@@ -34,10 +32,10 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
     @Override
     public boolean insert(SportEvent sportEvent) throws DaoException {
         boolean match;
-        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(INSERT_EVENT);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+            PreparedStatement statement = connection.prepareStatement(INSERT_EVENT)) {
             statement.setString(1, sportEvent.getUniqueEventId());
-            statement.setString(2, sportEvent.getEventType().getValue());
+            statement.setString(2, sportEvent.getEventType().toString());
             statement.setString(3, sportEvent.getFirstTeam());
             statement.setString(4, sportEvent.getFirstTeamRatio());
             statement.setString(5, sportEvent.getSecondTeam());
@@ -54,8 +52,8 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
     @Override
     public boolean delete(SportEvent sportEvent) throws DaoException {
         boolean match;
-        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(DELETE_EVENT);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+            PreparedStatement statement = connection.prepareStatement(DELETE_EVENT)) {
             statement.setString(1, sportEvent.getUniqueEventId());
             statement.executeUpdate();
             match = true;
@@ -68,8 +66,8 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
     @Override
     public List<SportEvent> findAll() throws DaoException {
         List<SportEvent> sportEventList;
-        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL_EVENTS);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL_EVENTS)) {
             ResultSet resultSet = preparedStatement.executeQuery();
             EventMapper eventMapper = EventMapper.getInstance();
             sportEventList = eventMapper.retrieve(resultSet);
@@ -83,9 +81,9 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
     @Override
     public boolean update(SportEvent sportEvent) throws DaoException {
         boolean match;
-        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(UPDATE_EVENT);
-            statement.setString(2, sportEvent.getEventType().getValue());
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+            PreparedStatement statement = connection.prepareStatement(UPDATE_EVENT)) {
+            statement.setString(2, sportEvent.getEventType().toString());
             statement.setString(3, sportEvent.getFirstTeam());
             statement.setString(4, sportEvent.getFirstTeamRatio());
             statement.setString(5, sportEvent.getSecondTeam());
@@ -102,8 +100,8 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
     @Override
     public Optional<SportEvent> findSportEventInDb(SportEvent event) throws DaoException {
         List<SportEvent> sportEventList;
-        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(ID_EVENT_SELECT);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(ID_EVENT_SELECT)) {
             preparedStatement.setString(1, event.getUniqueEventId());
             ResultSet resultSet = preparedStatement.executeQuery();
             EventMapper eventMapper = EventMapper.getInstance();

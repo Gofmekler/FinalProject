@@ -29,14 +29,14 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     @Override
     public boolean insert(User user) throws DaoException {
         boolean match;
-        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(UPDATE_USER);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(UPDATE_USER)) {
             statement.setString(1, user.getLogin());
             statement.setString(2, user.getPassword());
             statement.setString(3, user.getFirstName());
             statement.setString(4, user.getLastName());
             statement.setString(5, user.getEmail());
-            statement.setString(6, user.getRole().getValue());
+            statement.setString(6, user.getRole().toString());
             statement.executeUpdate();
             match = true;
         } catch (SQLException e) {
@@ -48,8 +48,8 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     @Override
     public boolean delete(User user) throws DaoException {
         boolean match;
-        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(DELETE_USER);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+            PreparedStatement statement = connection.prepareStatement(DELETE_USER)) {
             statement.setString(1, user.getLogin());
             statement.executeUpdate();
             match = true;
@@ -62,8 +62,8 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     @Override
     public List<User> findAll() throws DaoException {
         List<User> users;
-        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL_USERS);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL_USERS)) {
             ResultSet resultSet = preparedStatement.executeQuery();
             UserMapper userMapper = UserMapper.getInstance();
             users = userMapper.retrieve(resultSet);
@@ -77,13 +77,13 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     @Override
     public boolean update(User user) throws DaoException {
         boolean status;
-        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(INSERT_USER);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+            PreparedStatement statement = connection.prepareStatement(INSERT_USER)) {
             statement.setString(2, user.getPassword());
             statement.setString(3, user.getFirstName());
             statement.setString(4, user.getLastName());
             statement.setString(5, user.getEmail());
-            statement.setString(6, user.getRole().getValue());
+            statement.setString(6, user.getRole().toString());
             statement.executeUpdate();
             status = true;
         } catch (SQLException e) {
@@ -95,8 +95,8 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     @Override
     public Optional<User> authenticate(String login, String password) throws DaoException {
         List<User> users;
-        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(LOGIN_PASSWORD_SELECT);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(LOGIN_PASSWORD_SELECT)) {
             preparedStatement.setString(1, login);
             ResultSet resultSet = preparedStatement.executeQuery();
             UserMapper userMapper = UserMapper.getInstance();

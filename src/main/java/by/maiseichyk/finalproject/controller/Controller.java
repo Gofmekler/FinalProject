@@ -23,6 +23,20 @@ public class Controller extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        processRequest(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        processRequest(req, resp);
+    }
+
+    public void destroy() {
+        LOGGER.info("destroyed --- " + this.getServletName());
+        ConnectionPool.getInstance().destroyPool();
+    }
+
+    private void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
         String commandStr = request.getParameter("command");
         Command command = CommandType.define(commandStr);
@@ -43,15 +57,7 @@ public class Controller extends HttpServlet {
             }
         } catch (CommandException e) {
             request.setAttribute("error", e.getMessage());
+            response.sendError(500, e.getMessage());
         }
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    }
-
-    public void destroy() {
-        LOGGER.info("destroyed --- " + this.getServletName());
-        ConnectionPool.getInstance().destroyPool();
     }
 }

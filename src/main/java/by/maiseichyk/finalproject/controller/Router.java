@@ -6,7 +6,7 @@ public class Router {
     private String page = WELCOME;
     private Type type = Type.FORWARD;
 
-    public enum Type{
+    public enum Type {
         FORWARD, REDIRECT
     }
 
@@ -14,8 +14,10 @@ public class Router {
     }
 
     public Router(String page, Type type) {
-        this.page = page;
-        this.type = type;
+        if (page != null || type != null) {
+            this.page = page;
+            this.type = type;
+        }
     }
 
     public String getPage() {

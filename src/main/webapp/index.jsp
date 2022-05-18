@@ -16,7 +16,6 @@
     <br/>
     ${error}
     <br/>
-    ${session_id}
 </form>
 </body>
 </html>

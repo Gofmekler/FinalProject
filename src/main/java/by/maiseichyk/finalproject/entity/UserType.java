@@ -6,7 +6,8 @@ public enum UserType {
     CLIENT,
     BOOKMAKER;
 
-    public String getValue() {
-        return this.toString().toLowerCase();
+    @Override
+    public String toString() {
+        return super.toString();
     }
 }
