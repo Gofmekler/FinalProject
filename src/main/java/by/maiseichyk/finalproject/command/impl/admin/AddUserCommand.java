@@ -29,9 +29,10 @@ public class AddUserCommand implements Command {
                 .build();
         try {
             if (userDao.insert(user)) {
-                session.setAttribute("command_user_msg", "Inserted successfully");
+                request.setAttribute("command_user_msg", "Inserted successfully");
+                session.setAttribute("users", userDao.findAll());
             } else {
-                session.setAttribute("command_user_msg", "Cannot insert new user");
+                request.setAttribute("command_user_msg", "Cannot insert new user");
             }
         } catch (DaoException e) {
             session.setAttribute("error_msg", "Exception in DAO " + e);

@@ -23,9 +23,10 @@ public class DeleteUserCommand implements Command {
                 .build();
         try {
             if (userDao.delete(user)) {
-                session.setAttribute("command_msg", "Deleted successfully");
+                request.setAttribute("command_msg", "Deleted successfully");
+                session.setAttribute("users", userDao.findAll());
             } else {
-                session.setAttribute("command_msg", "Cannot delete this user");
+                request.setAttribute("command_msg", "Cannot delete this user");
             }
         } catch (DaoException e){
             session.setAttribute("command_msg", "Exception in DAO " + e);

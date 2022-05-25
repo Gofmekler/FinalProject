@@ -8,7 +8,6 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
-import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -23,10 +22,11 @@ public class ConnectionPool {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final AtomicBoolean isCreated = new AtomicBoolean(false);
     private static final int DEFAULT_POOL_SIZE = 8;
-    private static ConnectionPool instance = new ConnectionPool();
+    private static ConnectionPool instance;
+    private static ReentrantLock reentrantLock = new ReentrantLock();
     private BlockingQueue<ProxyConnection> freeConnections = new LinkedBlockingQueue<>(DEFAULT_POOL_SIZE);//const + add new blocking queue
     private BlockingQueue<ProxyConnection> usedConnections = new LinkedBlockingQueue<>(DEFAULT_POOL_SIZE);//new queue for checking
-    private static ReentrantLock reentrantLock = new ReentrantLock();
+
 
     {
         try {
@@ -47,11 +47,10 @@ public class ConnectionPool {
                 ProxyConnection proxyConnection = new ProxyConnection(connection);
                 freeConnections.add(proxyConnection);
             } catch (SQLException e) {
-                LOGGER.error("Error has occurred while creating connection: " + e);
-//                throw new ExceptionInInitializerError(e.getMessage());//todo log может не дать соединение
+                LOGGER.error("Error has occurred while creating connection: ", e);
             }
         }
-        if (freeConnections.isEmpty()) {
+        if (freeConnections.isEmpty()) {//todo check pool size?
             LOGGER.fatal("Error: no connections were created");
             throw new RuntimeException("Error: no connections were created");
         }
@@ -64,6 +63,7 @@ public class ConnectionPool {
                 reentrantLock.lock();
                 if (instance == null) {
                     instance = new ConnectionPool();
+                    isCreated.set(true);
                 }
             } finally {
                 reentrantLock.unlock();
@@ -78,6 +78,7 @@ public class ConnectionPool {
             connection = freeConnections.take();
             usedConnections.put(connection);
         } catch (InterruptedException e) {//todo log warn threadDeath
+            LOGGER.error("Error has occurred while getting connection: ", e);
             Thread.currentThread().interrupt();
         }
         return connection;
@@ -86,10 +87,11 @@ public class ConnectionPool {
     public void releaseConnection(Connection connection) {
         //todo check connection
         try {
-            usedConnections.remove(connection);
-            freeConnections.put((ProxyConnection) connection);
+            if (usedConnections.remove(connection)) {
+                freeConnections.put((ProxyConnection) connection);
+            }
         } catch (InterruptedException e) {
-            e.printStackTrace();//todo log
+            LOGGER.error("Error has occurred while releasing connection: ", e);
         }
     }
 
@@ -98,22 +100,22 @@ public class ConnectionPool {
             try {
                 freeConnections.take().reallyClose();
             } catch (SQLException | InterruptedException e) {
-                e.printStackTrace();//todo log
+                LOGGER.error("Error has occurred while destroying connection pool: ", e);
             }
         }
+        deregisterDriver();
     }
 
-    public void deregisterDriver() {
+    private void deregisterDriver() {
         Enumeration<Driver> drivers = DriverManager.getDrivers();
         while (drivers.hasMoreElements()) {
             Driver driver = drivers.nextElement();
             try {
                 DriverManager.deregisterDriver(driver);
-//                log
+                LOGGER.info("Driver deregister successfully.");
             } catch (SQLException e) {
-                //log
+                LOGGER.error("Error has occurred while deregistering driver: ", e);
             }
         }
-
     }
 }

@@ -30,10 +30,10 @@ public class UpdateUserInfoCommand implements Command {
                 .build();
         try {
             if (userDao.update(user)) {
-                session.setAttribute("command_msg", "Updated successfully");
-
+                request.setAttribute("command_msg", "Updated successfully");
+                session.setAttribute("users", userDao.findAll());
             } else {
-                session.setAttribute("command_msg", "Cannot update user's info");
+                request.setAttribute("command_msg", "Cannot update user's info");
             }
         } catch (DaoException e) {
             session.setAttribute("error_msg", "Exception in DAO " + e);

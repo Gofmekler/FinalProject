@@ -17,7 +17,7 @@ import java.util.List;
 import static by.maiseichyk.finalproject.command.PagePath.*;
 import static by.maiseichyk.finalproject.controller.Router.Type.*;
 
-public class GoToUserList implements Command {
+public class GoToUserListCommand implements Command {
     private static final Logger LOGGER = LogManager.getLogger();
     @Override
     public Router execute(HttpServletRequest request) throws CommandException {

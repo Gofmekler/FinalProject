@@ -20,8 +20,6 @@ public class RegisterCommand implements Command {
 
     @Override
     public Router execute(HttpServletRequest request) {
-        Router router = new Router();
-        String page;
         UserDaoImpl userDao = UserDaoImpl.getInstance();
         HttpSession session = request.getSession(false);
         User user = new User.UserBuilder()

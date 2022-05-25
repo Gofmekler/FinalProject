@@ -11,7 +11,7 @@
     <title>500</title>
 </head>
 <body>
-500
+500<br/>
 ${error}
 ${pageContext.errorData.requestURI}
 ${pageContext.errorData.servletName}

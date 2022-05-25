@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%--
   Created by IntelliJ IDEA.
   User: Maksim_Maiseichyk
@@ -5,7 +6,7 @@
   Time: 22:29
   To change this template use File | Settings | File Templates.
 --%>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
     <title>Personal Account</title>
@@ -25,5 +26,11 @@ Role: ${user.role}
 <br/>
 Nickname: ${user.login}
 
+<c:forEach items="${bets}" var="bet">
+    <tr><br/>
+        Bet Amount: ${bet.betAmount}<br/>
+        Bet Status: ${bet.betStatus}<br/>
+    </tr><br/>
+</c:forEach>
 </body>
 </html>

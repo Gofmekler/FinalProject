@@ -1,14 +1,14 @@
-package by.maiseichyk.finalproject.mapper.impl;
+package by.maiseichyk.finalproject.dao.mapper.impl;
 
 import by.maiseichyk.finalproject.entity.User;
 import by.maiseichyk.finalproject.entity.UserType;
-import by.maiseichyk.finalproject.mapper.Mapper;
+import by.maiseichyk.finalproject.dao.mapper.Mapper;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import static by.maiseichyk.finalproject.dao.ColumnName.*;
 
@@ -32,6 +32,7 @@ public class UserMapper implements Mapper<User> {
                     .setLastName(resultSet.getString(USER_LASTNAME))
                     .setEmail(resultSet.getString(USER_EMAIL))
                     .setUserRole(UserType.valueOf(resultSet.getString(USER_ROLE)))
+                    .setBalance(BigDecimal.valueOf(Long.parseLong(resultSet.getString(USER_BALANCE))))
                     .build();
             userList.add(user);
         }

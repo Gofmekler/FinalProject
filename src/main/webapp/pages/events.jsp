@@ -14,13 +14,14 @@
 <body>
 <c:if test="${user.role eq 'ADMIN'}">
 <form action="controller">
-    <input type="hidden" name="command" value="delete_sport_event_command"/>
+    <input type="hidden" name="command" value="delete_sport_event"/>
     Id: <input type="text" required= "required" name="unique_event_id" value=""/>
     <input type="submit" name="sub" value="Delete" />
 </form>
+    ${command_sport_event_msg}
 <br/>
 <form action="controller">
-    <input type="hidden" name="command" value="add_sport_event_command"/>
+    <input type="hidden" name="command" value="add_sport_event"/>
     Id: <input type="text" required= "required" name="unique_event_id" value=""/>
     <br/>
    Event Type: <select name="event_type" size="1">
@@ -43,6 +44,7 @@
     <input type="submit" name="sub" value="Insert new event" />
 </form>
 </c:if>
+${bet_msg}
 <br/>
 <c:forEach items="${events}" var="event">
     <tr><br/>
@@ -55,14 +57,14 @@
         2nd Ratio: ${event.secondTeamRatio}<br/>
         Event Type: ${event.eventType}<br/>
         <form action="controller">
-            <input type="hidden" name="command" value="bet_command"/>
+            <input type="hidden" name="command" value="bet"/>
             Bet amount: <input type="number" required="required" name="bet_amount">
         <select name="bet" size="1">
             <option selected="selected" value="${event.firstTeam}">Bet for ${event.firstTeam}</option>
             <option value="${event.secondTeam}">Bet for ${event.secondTeam}</option>
         </select>
             <br/>
-            <input type="submit" name="sub" value="BET" />
+            <input type="submit" name="sub" value="BET"/>
         </form>
     </tr><br/>
 </c:forEach>

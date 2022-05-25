@@ -1,8 +1,8 @@
-package by.maiseichyk.finalproject.mapper.impl;
+package by.maiseichyk.finalproject.dao.mapper.impl;
 
 import by.maiseichyk.finalproject.entity.SportEvent;
 import by.maiseichyk.finalproject.entity.SportEventType;
-import by.maiseichyk.finalproject.mapper.Mapper;
+import by.maiseichyk.finalproject.dao.mapper.Mapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

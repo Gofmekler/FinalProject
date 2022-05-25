@@ -5,7 +5,6 @@ import java.io.*;
 import by.maiseichyk.finalproject.command.CommandType;
 import by.maiseichyk.finalproject.command.Command;
 import by.maiseichyk.finalproject.exception.CommandException;
-import by.maiseichyk.finalproject.pool.ConnectionPool;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
@@ -17,7 +16,6 @@ public class Controller extends HttpServlet {
     private static final Logger LOGGER = LogManager.getLogger();
 
     public void init() {
-        ConnectionPool.getInstance();
         LOGGER.info("Servlet init ----- " + this.getServletInfo());
     }
 
@@ -33,7 +31,7 @@ public class Controller extends HttpServlet {
 
     public void destroy() {
         LOGGER.info("destroyed --- " + this.getServletName());
-        ConnectionPool.getInstance().destroyPool();
+
     }
 
     private void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -56,6 +54,7 @@ public class Controller extends HttpServlet {
                     break;
             }
         } catch (CommandException e) {
+            LOGGER.warn("Cant find command: ", e);
             request.setAttribute("error", e.getMessage());
             response.sendError(500, e.getMessage());
         }

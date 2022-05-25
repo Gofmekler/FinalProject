@@ -1,5 +1,7 @@
 package by.maiseichyk.finalproject.entity;
 
+import by.maiseichyk.finalproject.util.EventResultGenerator;
+
 import java.util.Objects;
 
 public class SportEvent extends AbstractEntity {
@@ -10,6 +12,7 @@ public class SportEvent extends AbstractEntity {
     private String secondTeamRatio;
     private String eventDate;
     private String uniqueEventId;
+    private SportEventTeamStatus firstTeamResultStatus;
 
     public SportEvent() {
     }
@@ -70,6 +73,14 @@ public class SportEvent extends AbstractEntity {
         this.uniqueEventId = uniqueEventId;
     }
 
+    public SportEventTeamStatus getFirstTeamResultStatus() {
+        return firstTeamResultStatus;
+    }
+
+    public void setFirstTeamResultStatus(SportEventTeamStatus firstTeamResultStatus) {
+        this.firstTeamResultStatus = firstTeamResultStatus;
+    }
+
     public static class SportEventBuilder {
         private final SportEvent sportEvent;
 
@@ -114,6 +125,12 @@ public class SportEvent extends AbstractEntity {
 
         public SportEventBuilder setUniqueEventId(String uniqueEventId) {
             sportEvent.uniqueEventId = uniqueEventId;
+            return this;
+
+        }
+
+        public SportEventBuilder setFirstTeamResultStatus(SportEventTeamStatus teamStatus){
+            sportEvent.firstTeamResultStatus = teamStatus;
             return this;
         }
 

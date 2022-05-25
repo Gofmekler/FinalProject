@@ -21,6 +21,7 @@
        Role: ${user.role}<br/>
        Email: ${user.email}<br/>
        Login: ${user.login}<br/>
+       Balance: ${user.balance}<br/>
     </tr><br/>
 </c:forEach>
 </table>

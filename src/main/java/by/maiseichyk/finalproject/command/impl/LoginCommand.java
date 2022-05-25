@@ -11,6 +11,8 @@ import by.maiseichyk.finalproject.service.UserService;
 import by.maiseichyk.finalproject.service.impl.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Optional;
 
@@ -18,6 +20,7 @@ import static by.maiseichyk.finalproject.command.PagePath.*;
 import static by.maiseichyk.finalproject.controller.Router.Type.*;
 
 public class LoginCommand implements Command {
+    private static final Logger LOGGER = LogManager.getLogger();
     @Override
     public Router execute(HttpServletRequest request) {
         String login = request.getParameter("login");
@@ -36,7 +39,7 @@ public class LoginCommand implements Command {
                 return new Router(WELCOME, FORWARD);
             }
         } catch (ServiceException e) {
-            //log todo
+            LOGGER.info("Exception in login command, ", e);
             return new Router(ERROR_500, REDIRECT);
         }
     }

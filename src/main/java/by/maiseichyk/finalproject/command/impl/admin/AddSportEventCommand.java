@@ -7,6 +7,7 @@ import by.maiseichyk.finalproject.entity.SportEvent;
 import by.maiseichyk.finalproject.entity.SportEventType;
 import by.maiseichyk.finalproject.exception.CommandException;
 import by.maiseichyk.finalproject.exception.DaoException;
+import by.maiseichyk.finalproject.util.EventResultGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -30,12 +31,13 @@ public class AddSportEventCommand implements Command {
                 .build();
         try {
             if (eventDao.insert(event)) {
-                session.setAttribute("command_sport_event_msg", "Inserted successfully");
+                request.setAttribute("command_sport_event_msg", "Inserted successfully");
+                session.setAttribute("events", eventDao.findAll());
             } else {
-                session.setAttribute("command_sport_event_msg", "Cannot insert new event");
+                request.setAttribute("command_sport_event_msg", "Cannot insert new event");
             }
         } catch (DaoException e) {
-            session.setAttribute("error_msg", "Exception in DAO " + e);
+            request.setAttribute("error_msg", "Exception in DAO " + e);
             return new Router(ERROR_500, REDIRECT);
         }
 

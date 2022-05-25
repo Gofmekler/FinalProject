@@ -1,4 +1,4 @@
-package by.maiseichyk.finalproject.mapper;
+package by.maiseichyk.finalproject.dao.mapper;
 
 import by.maiseichyk.finalproject.entity.AbstractEntity;
 import java.sql.ResultSet;

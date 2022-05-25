@@ -13,12 +13,13 @@ public class SessionContextListenerImpl implements ServletContextListener{
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
+        ConnectionPool.getInstance();
         LOGGER.info("++++++------------Context initialized--------------------" + sce.getServletContext().getServerInfo());
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        ConnectionPool.getInstance().deregisterDriver();
+        ConnectionPool.getInstance().destroyPool();
         LOGGER.info("-----------------Context Destroyed--------------------" + sce.getServletContext().getContextPath());
     }
 

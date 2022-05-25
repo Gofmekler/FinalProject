@@ -1,5 +1,6 @@
 package by.maiseichyk.finalproject.entity;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 public class User extends AbstractEntity {
@@ -9,7 +10,7 @@ public class User extends AbstractEntity {
     private String lastName;
     private UserType role;
     private String email;
-    private double balance;
+    private BigDecimal balance;
 
     public User() {
     }
@@ -62,11 +63,11 @@ public class User extends AbstractEntity {
         this.email = email;
     }
 
-    public double getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 
-    public void setBalance(double balance) {
+    public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
 
@@ -106,7 +107,7 @@ public class User extends AbstractEntity {
             return this;
         }
 
-        public  UserBuilder setBalance(double balance){
+        public  UserBuilder setBalance(BigDecimal balance){
             user.balance = balance;
             return this;
         }
@@ -121,7 +122,7 @@ public class User extends AbstractEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Double.compare(user.balance, balance) == 0 && Objects.equals(login, user.login) && Objects.equals(password, user.password) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && role == user.role && Objects.equals(email, user.email);
+        return Objects.equals(login, user.login) && Objects.equals(password, user.password) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && role == user.role && Objects.equals(email, user.email) && Objects.equals(balance, user.balance);
     }
 
     @Override
@@ -137,6 +138,7 @@ public class User extends AbstractEntity {
         sb.append("', name='").append(firstName);
         sb.append("', surname='").append(lastName);
         sb.append(", role=").append(role);
+        sb.append(", balance= ").append(balance);
         sb.append(", email=").append(email).append("}");
         return sb.toString();
     }

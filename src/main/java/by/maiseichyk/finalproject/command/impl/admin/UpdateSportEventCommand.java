@@ -18,7 +18,7 @@ public class UpdateSportEventCommand implements Command {
     @Override
     public Router execute(HttpServletRequest request) throws CommandException {
         HttpSession session = request.getSession();
-        SportEventDaoImpl sportEventDao = SportEventDaoImpl.getInstance();
+        SportEventDaoImpl eventDao = SportEventDaoImpl.getInstance();
         SportEvent sportEvent = new SportEvent.SportEventBuilder()
                 .setUniqueEventId(request.getParameter(UNIQUE_EVENT_ID))
                 .setEventType(SportEventType.valueOf(request.getParameter(EVENT_TYPE)))
@@ -29,11 +29,11 @@ public class UpdateSportEventCommand implements Command {
                 .setSecondTeamRatio(request.getParameter(SECOND_TEAM_RATIO))
                 .build();
         try {
-            if (sportEventDao.update(sportEvent)){
-                session.setAttribute("command_sport_event_msg", "Info updated successfully");
-            }
-            else{
-                session.setAttribute("command_sport_event_msg", "Cannot update event info");
+            if (eventDao.update(sportEvent)) {
+                request.setAttribute("command_sport_event_msg", "Info updated successfully");
+                session.setAttribute("events", eventDao.findAll());
+            } else {
+                request.setAttribute("command_sport_event_msg", "Cannot update event info");
             }
         } catch (DaoException e) {
             session.setAttribute("error_msg", "Exception in Event DAO. " + e);

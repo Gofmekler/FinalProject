@@ -23,9 +23,10 @@ public class DeleteSportEventCommand implements Command {
                 .build();
         try {
             if (eventDao.delete(event)) {
-                session.setAttribute("command_sport_event_msg", "Delete successfully");
+                request.setAttribute("command_sport_event_msg", "Deleted successfully");
+                session.setAttribute("events", eventDao.findAll());
             } else {
-                session.setAttribute("command_sport_event_msg", "Cannot delete event");
+                request.setAttribute("command_sport_event_msg", "Cannot delete event");
             }
         } catch (DaoException e) {
             session.setAttribute("error_msg", "Exception in DAO " + e);

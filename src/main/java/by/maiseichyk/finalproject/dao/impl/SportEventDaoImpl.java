@@ -4,7 +4,7 @@ import by.maiseichyk.finalproject.dao.BaseDao;
 import by.maiseichyk.finalproject.dao.SportEventDao;
 import by.maiseichyk.finalproject.entity.SportEvent;
 import by.maiseichyk.finalproject.exception.DaoException;
-import by.maiseichyk.finalproject.mapper.impl.EventMapper;
+import by.maiseichyk.finalproject.dao.mapper.impl.EventMapper;
 import by.maiseichyk.finalproject.pool.ConnectionPool;
 
 import java.sql.Connection;
@@ -111,5 +111,10 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
             throw new DaoException("Error has occurred while finding event by id: ", exception);
         }
         return sportEventList.isEmpty() ? Optional.empty() : Optional.of(sportEventList.get(0));
+    }
+
+    @Override
+    public boolean insertSportEventResultInDb(String result) throws DaoException {
+        return false;
     }
 }

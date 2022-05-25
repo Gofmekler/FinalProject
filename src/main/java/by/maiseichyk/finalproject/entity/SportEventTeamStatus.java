@@ -1,9 +1,9 @@
 package by.maiseichyk.finalproject.entity;
 
-public enum BetStatus {
+public enum SportEventTeamStatus {
     WIN,
     LOST,
-    PROCESSING;
+    DRAWN;
 
     @Override
     public String toString() {

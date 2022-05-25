@@ -11,10 +11,13 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
+import static by.maiseichyk.finalproject.command.PagePath.HOME;
+
 @WebFilter(filterName = "PageRedirectSecurityFilter", urlPatterns = "/pages/*", initParams = {@WebInitParam(name = "INDEX_PATH", value = "/index.jsp")})
 public class PageRedirectSecurityFilter implements Filter {
     private static final Logger LOGGER = LogManager.getLogger();
     private String indexPath;
+
     public void init(FilterConfig config) throws ServletException {
         indexPath = config.getInitParameter("INDEX_PATH");
     }
@@ -28,16 +31,17 @@ public class PageRedirectSecurityFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpSession session = httpRequest.getSession(false);
         UserType userRole = (UserType) session.getAttribute("user_role");
-        if (userRole == UserType.GUEST || userRole == null){
+        LOGGER.info(userRole);
+        if (userRole == null) {
             session.setAttribute("register_msg", "You need to register or login firstly");//FIXME
             httpResponse.sendRedirect(httpRequest.getContextPath() + indexPath);
             return;
         }
 //        else{//checking user role
-//            RequestDispatcher requestDispatcher = request.getServletContext().getRequestDispatcher("/pages/main.jsp");
-//            requestDispatcher.forward(httpRequest, httpResponse);
-//        httpResponse.sendRedirect(httpRequest.getContextPath() + indexPath);
-
+////            RequestDispatcher requestDispatcher = request.getServletContext().getRequestDispatcher("/pages/main.jsp");
+////            requestDispatcher.forward(httpRequest, httpResponse);
+//        httpResponse.sendRedirect(httpRequest.getContextPath()+ HOME);
+//
 //    }
 //        httpResponse.sendRedirect(httpRequest.getContextPath() + indexPath);
         chain.doFilter(request, response);

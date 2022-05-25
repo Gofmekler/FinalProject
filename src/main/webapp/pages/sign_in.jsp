@@ -15,7 +15,7 @@
     LOGIN
     <br/>
     <input type="hidden" name="command" value="login"/>
-    Login: <input type="text" required= "required" name="login" value=""/>
+    Login: <input type="text" required= "required" name="login" value="" pattern="[a-zA-Z][A-Za-z0-9]{2,29}"/>
     <br/>
     Password: <input type="password" required="required" name="password" value="">
     <br/>
