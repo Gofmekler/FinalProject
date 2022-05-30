@@ -188,7 +188,7 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
 //    }
 
     @Override
-    public boolean updateUsersBalanceByLogins(List<User> users) throws DaoException {//updating LOGINS???????????? todo change
+    public boolean updateUsersBalanceByLogins(List<User> users) throws DaoException {//updating  todo change
         try (Connection connection = ConnectionPool.getInstance().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_USERS_BALANCE)) {
             for (User user : users) {
