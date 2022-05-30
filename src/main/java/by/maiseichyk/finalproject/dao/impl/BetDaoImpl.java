@@ -3,10 +3,13 @@ package by.maiseichyk.finalproject.dao.impl;
 import by.maiseichyk.finalproject.dao.BaseDao;
 import by.maiseichyk.finalproject.dao.BetDao;
 import by.maiseichyk.finalproject.dao.mapper.impl.BetMapper;
+import by.maiseichyk.finalproject.dao.mapper.impl.UserMapper;
 import by.maiseichyk.finalproject.entity.Bet;
-import by.maiseichyk.finalproject.entity.BetStatus;
+import by.maiseichyk.finalproject.entity.User;
 import by.maiseichyk.finalproject.exception.DaoException;
 import by.maiseichyk.finalproject.pool.ConnectionPool;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,15 +18,20 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
+import static by.maiseichyk.finalproject.entity.BetStatus.PROCESSING;
+
 public class BetDaoImpl extends BaseDao<Bet> implements BetDao {
-    private static final String INSERT_NEW_BET = "INSERT INTO bets(bet_id, user_login, unique_sport_event_id, bet_date, bet_amount, bet_status) VALUES (?,?,?,?,?,?)";
-    private static final String DELETE_BET = "DELETE FROM bets WHERE bet_id = ?";
-    private static final String UPDATE_BET = "UPDATE bets SET(bet_date, bet_amount, bet_status) WHERE bet_id = ?";
+    private static final Logger LOGGER = LogManager.getLogger();
+    private static final String INSERT_NEW_BET = "INSERT INTO bets(user_login, unique_event_id, bet_amount, bet_status, win_coefficient, bet_chosen_team) VALUES (?,?,?,?,?,?)";
+    private static final String DELETE_BET = "DELETE FROM bets WHERE id_bet = ?";
+    private static final String SELECT_ALL_BETS = "SELECT id_bet, user_login, unique_event_id, bet_date, bet_amount, bet_status, bet_chosen_team, win_coefficient FROM bets";
+    private static final String UPDATE_BET = "UPDATE bets SET(bet_date, bet_amount, bet_status) WHERE id_bet = ?";
     private static final String SELECT_BET_BY_ID = "SELECT user_login, sport_event, bet_date, bet_amount, bet_status FROM bets WHERE bet_id = ?";
-    private static final String SELECT_USER_BETS_BY_USER_LOGIN = "SELECT bet_id, user_login, unique_sport_event_id, bet_date, bet_amount, bet_status FROM bets WHERE user_login = ?";
-    private static final String SELECT_USER_BETS_BY_BET_STATUS = "SELECT bet_id, unique_sport_event_id, bet_date, bet_amount, FROM bets WHERE bet_status = ? AND user_login = ?";
-    private static final String SELECT_BETS_BY_EVENT_ID = "SELECT bet_amount, user_login, bet_chosen_team FROM bets WHERE unique_sport_event_id = ?";
-    private static final String SELECT_BETS_FOR_PROVIDED_TEAM_BY_EVENT_ID = "SELECT bet_amount, user_login FROM bets WHERE unique_sport_event_id = ? AND bet_chosen_team = ?";
+    private static final String SELECT_USER_BETS_BY_USER_LOGIN = "SELECT id_bet, user_login, unique_event_id, bet_date, bet_amount, bet_status, bet_chosen_team, win_coefficient FROM bets WHERE user_login = ?";
+    private static final String SELECT_USER_BETS_BY_BET_STATUS = "SELECT bet_id, unique_event_id, bet_date, bet_amount, bet_status, bet_chosen_team, win_coefficient FROM bets WHERE bet_status = ? AND user_login = ?";
+    private static final String SELECT_BETS_BY_EVENT_ID = "SELECT id_bet, user_login, unique_event_id, bet_date, bet_amount, bet_status, bet_chosen_team, win_coefficient FROM bets WHERE unique_event_id = ?";
+    private static final String SELECT_BETS_FOR_PROVIDED_TEAM_BY_EVENT_ID = "SELECT id_bet, user_login, unique_event_id, bet_date, bet_amount, bet_status, bet_chosen_team, win_coefficient FROM bets WHERE unique_event_id = ? AND bet_chosen_team = ? AND bet_status = ?";
+    private static final String UPDATE_BETS_STATUS = "UPDATE bets SET bet_status = ? WHERE user_login = ? AND id_bet = ?";
     private static BetDaoImpl instance = new BetDaoImpl();
 
     private BetDaoImpl() {
@@ -38,15 +46,16 @@ public class BetDaoImpl extends BaseDao<Bet> implements BetDao {
         boolean match;
         try (Connection connection = ConnectionPool.getInstance().getConnection();
              PreparedStatement statement = connection.prepareStatement(INSERT_NEW_BET)) {
-            statement.setString(1, bet.getId());
-            statement.setString(2, bet.getUserLogin());
-            statement.setString(3, bet.getSportEventId());
-            statement.setString(4, bet.getBetDate());
-            statement.setString(5, String.valueOf(bet.getBetAmount()));
-            statement.setString(6, bet.getBetStatus().toString());
+            statement.setString(1, bet.getUserLogin());
+            statement.setString(2, bet.getSportEventId());
+            statement.setString(3, String.valueOf(bet.getBetAmount()));
+            statement.setString(4, bet.getBetStatus().toString());
+            statement.setString(5, bet.getWinCoefficient().toString());
+            statement.setString(6, bet.getChosenTeam());
             statement.executeUpdate();
             match = true;
         } catch (SQLException e) {
+            LOGGER.error("Error while inserting new bet: " + e);
             throw new DaoException("Can't insert new user to Database: ", e);
         }
         return match;
@@ -68,7 +77,17 @@ public class BetDaoImpl extends BaseDao<Bet> implements BetDao {
 
     @Override
     public List<Bet> findAll() throws DaoException {
-        return null;
+        List<Bet> bets;
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL_BETS)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            BetMapper betMapper = BetMapper.getInstance();
+            bets = betMapper.retrieve(resultSet);
+        } catch (SQLException e) {
+//                LOGGER.error("Error has occurred while finding users: " + exception);
+            throw new DaoException("Error has occurred while finding bets: ", e);
+        }
+        return bets;
     }
 
     @Override
@@ -77,32 +96,16 @@ public class BetDaoImpl extends BaseDao<Bet> implements BetDao {
     }
 
     @Override
-    public List<Optional<Bet>> findUserBetsByBetStatus(String userLogin, BetStatus betStatus) throws DaoException {
-        List betList;//todo list
-        try (Connection connection = ConnectionPool.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_BETS_BY_BET_STATUS)) {
-            preparedStatement.setString(1, userLogin);
-            preparedStatement.setString(2, betStatus.toString());
-            ResultSet resultSet = preparedStatement.executeQuery();
-            BetMapper betMapper = BetMapper.getInstance();
-            betList = betMapper.retrieve(resultSet);
-        } catch (SQLException exception) {
-//                LOGGER.error("Error has occurred while finding event by id: " + exception);
-            throw new DaoException("Error has occurred while finding event by id: ", exception);
-        }
-        return null;
-    }
-
-    @Override
     public List<Bet> findAllUserBetsByLogin(String userLogin) throws DaoException {
         List<Bet> bets;
-        try(Connection connection = ConnectionPool.getInstance().getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_BETS_BY_USER_LOGIN)){
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_BETS_BY_USER_LOGIN)) {
             preparedStatement.setString(1, userLogin);
             ResultSet resultSet = preparedStatement.executeQuery();
             BetMapper betMapper = BetMapper.getInstance();
             bets = betMapper.retrieve(resultSet);
-        } catch (SQLException e){
+        } catch (SQLException e) {
+            LOGGER.info("Exception while finding all user bets: " + e.getMessage());
             throw new DaoException(e);
         }
         return bets;
@@ -111,31 +114,51 @@ public class BetDaoImpl extends BaseDao<Bet> implements BetDao {
     @Override
     public List<Bet> findAllBetsByEventId(String eventId) throws DaoException {
         List<Bet> bets;
-        try(Connection connection = ConnectionPool.getInstance().getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BETS_BY_EVENT_ID)){
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BETS_BY_EVENT_ID)) {
             preparedStatement.setString(1, eventId);
             ResultSet resultSet = preparedStatement.executeQuery();
             BetMapper betMapper = BetMapper.getInstance();
             bets = betMapper.retrieve(resultSet);
-        } catch (SQLException e){
+        } catch (SQLException e) {
             throw new DaoException(e);
         }
         return bets;
     }
 
     @Override
-    public List<Bet> findBetsForProvidedTeamByEventID(String eventId, String providedTeam) throws DaoException {
+    public List<Bet> findProcessingBetsForProvidedTeamByEventID(String eventId, String providedTeam) throws DaoException {
         List<Bet> bets;
-        try(Connection connection = ConnectionPool.getInstance().getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BETS_FOR_PROVIDED_TEAM_BY_EVENT_ID)){
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BETS_FOR_PROVIDED_TEAM_BY_EVENT_ID)) {
             preparedStatement.setString(1, eventId);
             preparedStatement.setString(2, providedTeam);
+            preparedStatement.setString(3, PROCESSING.toString());
             ResultSet resultSet = preparedStatement.executeQuery();
             BetMapper betMapper = BetMapper.getInstance();
             bets = betMapper.retrieve(resultSet);
-        } catch (SQLException e){
+        } catch (SQLException e) {
             throw new DaoException(e);
         }
         return bets;
+    }
+
+    @Override
+    public boolean updateBetStatus(List<Bet> bets) throws DaoException {
+        boolean status;
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_BETS_STATUS)) {
+            for (Bet bet : bets) {
+                preparedStatement.setString(1, bet.getBetStatus().toString());
+                preparedStatement.setString(2, bet.getUserLogin());
+                preparedStatement.setString(3, bet.getId());
+                preparedStatement.addBatch();
+            }
+            preparedStatement.executeBatch();
+            status = true;
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
+        return status;
     }
 }

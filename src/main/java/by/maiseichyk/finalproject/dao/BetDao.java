@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BetDao {
-    List<Optional<Bet>> findUserBetsByBetStatus(String userLogin, BetStatus betStatus) throws DaoException;
     List<Bet> findAllUserBetsByLogin(String userLogin) throws DaoException;
     List<Bet> findAllBetsByEventId(String eventId) throws DaoException;
-    List<Bet> findBetsForProvidedTeamByEventID(String eventId, String providedTeam) throws DaoException;
+    List<Bet> findProcessingBetsForProvidedTeamByEventID(String eventId, String providedTeam) throws DaoException;
+    boolean updateBetStatus(List<Bet> bets) throws DaoException;
 }

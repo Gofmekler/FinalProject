@@ -11,6 +11,8 @@ import by.maiseichyk.finalproject.util.EventResultGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import java.math.BigDecimal;
+
 import static by.maiseichyk.finalproject.command.PagePath.*;
 import static by.maiseichyk.finalproject.controller.Router.Type.*;
 import static by.maiseichyk.finalproject.dao.ColumnName.*;
@@ -24,9 +26,9 @@ public class AddSportEventCommand implements Command {
                 .setUniqueEventId(request.getParameter(UNIQUE_EVENT_ID))
                 .setEventType(SportEventType.valueOf(request.getParameter(EVENT_TYPE).toUpperCase()))
                 .setFirstTeam(request.getParameter(FIRST_TEAM))
-                .setFirstTeamRatio(request.getParameter(FIRST_TEAM_RATIO))
+                .setFirstTeamRatio(BigDecimal.valueOf(Long.parseLong(request.getParameter(FIRST_TEAM_RATIO))))
                 .setSecondTeam(request.getParameter(SECOND_TEAM))
-                .setSecondTeamRatio(request.getParameter(SECOND_TEAM_RATIO))
+                .setSecondTeamRatio(BigDecimal.valueOf(Long.parseLong(request.getParameter(SECOND_TEAM_RATIO))))
                 .setEventDate(request.getParameter(EVENT_DATE))
                 .build();
         try {

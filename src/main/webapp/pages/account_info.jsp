@@ -25,6 +25,8 @@ Email: ${user.email}
 Role: ${user.role}
 <br/>
 Nickname: ${user.login}
+<br/>
+Balance: ${user.balance}
 
 <c:forEach items="${bets}" var="bet">
     <tr><br/>

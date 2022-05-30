@@ -10,6 +10,8 @@ import by.maiseichyk.finalproject.exception.DaoException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import java.math.BigDecimal;
+
 import static by.maiseichyk.finalproject.command.PagePath.*;
 import static by.maiseichyk.finalproject.controller.Router.Type.*;
 import static by.maiseichyk.finalproject.dao.ColumnName.*;
@@ -24,9 +26,9 @@ public class UpdateSportEventCommand implements Command {
                 .setEventType(SportEventType.valueOf(request.getParameter(EVENT_TYPE)))
                 .setEventDate(request.getParameter(EVENT_DATE))
                 .setFirstTeam(request.getParameter(FIRST_TEAM))
-                .setFirstTeamRatio(request.getParameter(FIRST_TEAM_RATIO))
+                .setFirstTeamRatio(BigDecimal.valueOf(Long.parseLong(request.getParameter(FIRST_TEAM_RATIO))))
                 .setSecondTeam(request.getParameter(SECOND_TEAM))
-                .setSecondTeamRatio(request.getParameter(SECOND_TEAM_RATIO))
+                .setSecondTeamRatio(BigDecimal.valueOf(Long.parseLong(request.getParameter(SECOND_TEAM_RATIO))))
                 .build();
         try {
             if (eventDao.update(sportEvent)) {

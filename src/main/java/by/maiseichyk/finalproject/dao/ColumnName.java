@@ -32,9 +32,9 @@ public final class ColumnName {
 
     public static final String BET_USER_LOGIN = "user_login";
 
-    public static final String BET_EVENT_ID = "unique_sport_event_id";
+    public static final String BET_EVENT_ID = "unique_event_id";
 
-    public static final String BET_ID = "bet_id";
+    public static final String BET_ID = "id_bet";
 
     public static final String BET_DATE = "bet_date";
 
@@ -43,6 +43,8 @@ public final class ColumnName {
     public static final String BET_STATUS = "bet_status";
 
     public static final String CHOSEN_TEAM = "bet_chosen_team";
+
+    public static final String WIN_COEFFICIENT = "win_coefficient";
 
     private ColumnName() {
     }

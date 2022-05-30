@@ -8,11 +8,14 @@ import by.maiseichyk.finalproject.entity.User;
 import by.maiseichyk.finalproject.exception.DaoException;
 import by.maiseichyk.finalproject.exception.ServiceException;
 import by.maiseichyk.finalproject.service.BetService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Optional;
 
 public class BetServiceImpl implements BetService {
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final BetServiceImpl instance = new BetServiceImpl();
 
     private BetServiceImpl() {
@@ -23,15 +26,18 @@ public class BetServiceImpl implements BetService {
     }
 
     @Override
-    public boolean checkBalance(String userLogin, BigDecimal betAmount) throws ServiceException {
+    public boolean checkBalance(String userLogin, BigDecimal betAmount) throws ServiceException {//migrate to user service
         UserDaoImpl userDao = UserDaoImpl.getInstance();
         try {
-            BigDecimal userBalance = userDao.getUserBalance(userLogin);
-            if (userBalance.compareTo(betAmount) > 1 || userBalance.compareTo(betAmount) > 0) {
-                return true;
+            Optional<User> user = userDao.findUserByLogin(userLogin);
+            if (user.isPresent()) {
+                BigDecimal userBalance = user.get().getBalance();
+                if (userBalance.compareTo(betAmount) >= 0) {//|| userBalance.compareTo(betAmount) > 0) {
+                    return true;
+                }
             }
         } catch (DaoException e) {
-            //todo log
+            LOGGER.error("Exception while checking users balance: " + e);
             return false;
         }
         return false;
@@ -48,29 +54,25 @@ public class BetServiceImpl implements BetService {
                 BigDecimal actualBalance = currentBalance.subtract(betAmount);
                 String login = user.getLogin();
                 if (userDao.updateUserBalance(actualBalance, login)) {
-                    return true;//session attribute
-                }//transaction
+                    return true;
+                }
             }
         } catch (DaoException e) {
-            //todo log
-            return false;
+            LOGGER.error("Exception while inserting bet: " + e.getMessage());
+            throw new ServiceException(e);
         }
         return false;
     }
 
     @Override
-    public Bet revealBetSummary(Bet bet, int eventResult) {
-        BetDaoImpl betDao = BetDaoImpl.getInstance();
+    public Bet calculateBetSummary(Bet bet, int eventResult) throws ServiceException {
         if (eventResult > 0) {
             bet.setBetStatus(BetStatus.WIN);
         } else if (eventResult < 0) {
             bet.setBetStatus(BetStatus.LOST);
+        } else {
+            bet.setBetStatus(BetStatus.DRAWN);
         }
-        try {
-            betDao.update(bet);//update status only todo
-        } catch (DaoException e) {
-            e.printStackTrace();//todo
-        }
-        return null;
+        return bet;//or return bet status to update in event service
     }
 }

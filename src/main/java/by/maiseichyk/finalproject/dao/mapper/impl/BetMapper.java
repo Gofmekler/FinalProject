@@ -34,6 +34,7 @@ public class BetMapper implements Mapper {
                     .setBetAmount(BigDecimal.valueOf(Long.parseLong(resultSet.getString(BET_AMOUNT))))
                     .setBetStatus(BetStatus.valueOf(resultSet.getString(BET_STATUS)))
                     .setChosenTeam(resultSet.getString(CHOSEN_TEAM))
+                    .setWinCoefficient(BigDecimal.valueOf(Long.parseLong(resultSet.getString(WIN_COEFFICIENT))))
                     .build();
             betList.add(bet);
         }

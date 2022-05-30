@@ -1,17 +1,12 @@
 package by.maiseichyk.finalproject.command;
 
+import by.maiseichyk.finalproject.command.impl.admin.*;
 import by.maiseichyk.finalproject.command.impl.bet.BetCommand;
 import by.maiseichyk.finalproject.command.impl.go.*;
 import by.maiseichyk.finalproject.command.impl.DefaultCommand;
 import by.maiseichyk.finalproject.command.impl.LoginCommand;
 import by.maiseichyk.finalproject.command.impl.LogoutCommand;
 import by.maiseichyk.finalproject.command.impl.RegisterCommand;
-import by.maiseichyk.finalproject.command.impl.admin.AddSportEventCommand;
-import by.maiseichyk.finalproject.command.impl.admin.DeleteSportEventCommand;
-import by.maiseichyk.finalproject.command.impl.admin.UpdateSportEventCommand;
-import by.maiseichyk.finalproject.command.impl.admin.AddUserCommand;
-import by.maiseichyk.finalproject.command.impl.admin.UpdateUserInfoCommand;
-import by.maiseichyk.finalproject.command.impl.admin.DeleteUserCommand;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -25,6 +20,7 @@ public enum CommandType {
     ADD_SPORT_EVENT(new AddSportEventCommand()),
     DELETE_SPORT_EVENT(new DeleteSportEventCommand()),
     UPDATE_SPORT_EVENT(new UpdateSportEventCommand()),
+    EVENT_RELEASE(new SportEventReleaseCommand()),
     BET(new BetCommand()),
     GO_TO_ACCOUNT_INFO(new GoToAccountInfoCommand()),
     GO_TO_EVENT(new GoToEventCommand()),

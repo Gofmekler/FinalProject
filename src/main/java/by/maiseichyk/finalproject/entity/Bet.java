@@ -11,6 +11,7 @@ public class Bet extends AbstractEntity {
     private BetStatus betStatus;
     private BigDecimal betAmount; //migrate to big decimal
     private String chosenTeam;
+    private BigDecimal winCoefficient;
 
     public Bet() {
     }
@@ -60,6 +61,14 @@ public class Bet extends AbstractEntity {
         this.chosenTeam = chosenTeam;
     }
 
+    public BigDecimal getWinCoefficient() {
+        return winCoefficient;
+    }
+
+    public void setWinCoefficient(BigDecimal winCoefficient) {
+        this.winCoefficient = winCoefficient;
+    }
+
     public void setBetStatus(BetStatus betStatus) {
         this.betStatus = betStatus;
     }
@@ -86,6 +95,11 @@ public class Bet extends AbstractEntity {
 
         public BetBuilder setUserLogin(String userLogin) {
             bet.userLogin = userLogin;
+            return this;
+        }
+
+        public BetBuilder setWinCoefficient(BigDecimal winCoefficient){
+            bet.winCoefficient = winCoefficient;
             return this;
         }
 

@@ -13,6 +13,8 @@ public final class PagePath {
 
     public static final String WELCOME = "/index.jsp";
 
+    public static final String BET_SUCCESS = "/pages/bet_success.jsp";
+
     public static final String EVENTS = "/pages/events.jsp";
 
     public static final String ACCOUNT_INFO = "/pages/account_info.jsp";

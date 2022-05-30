@@ -1,15 +1,14 @@
 package by.maiseichyk.finalproject.entity;
 
-import by.maiseichyk.finalproject.util.EventResultGenerator;
-
+import java.math.BigDecimal;
 import java.util.Objects;
 
 public class SportEvent extends AbstractEntity {
     private String firstTeam;
     private String secondTeam;
     private SportEventType eventType;
-    private String firstTeamRatio;//migrate to double
-    private String secondTeamRatio;
+    private BigDecimal firstTeamRatio;
+    private BigDecimal secondTeamRatio;
     private String eventDate;
     private String uniqueEventId;
     private SportEventTeamStatus firstTeamResultStatus;
@@ -41,19 +40,19 @@ public class SportEvent extends AbstractEntity {
         this.eventType = eventType;
     }
 
-    public String getFirstTeamRatio() {
+    public BigDecimal getFirstTeamRatio() {
         return firstTeamRatio;
     }
 
-    public void setFirstTeamRatio(String firstTeamRatio) {
+    public void setFirstTeamRatio(BigDecimal firstTeamRatio) {
         this.firstTeamRatio = firstTeamRatio;
     }
 
-    public String getSecondTeamRatio() {
+    public BigDecimal getSecondTeamRatio() {
         return secondTeamRatio;
     }
 
-    public void setSecondTeamRatio(String secondTeamRatio) {
+    public void setSecondTeamRatio(BigDecimal secondTeamRatio) {
         this.secondTeamRatio = secondTeamRatio;
     }
 
@@ -106,13 +105,13 @@ public class SportEvent extends AbstractEntity {
         }
 
 
-        public SportEventBuilder setFirstTeamRatio(String firstTeamRatio) {
+        public SportEventBuilder setFirstTeamRatio(BigDecimal firstTeamRatio) {
             sportEvent.firstTeamRatio = firstTeamRatio;
             return this;
         }
 
 
-        public SportEventBuilder setSecondTeamRatio(String secondTeamRatio) {
+        public SportEventBuilder setSecondTeamRatio(BigDecimal secondTeamRatio) {
             sportEvent.secondTeamRatio = secondTeamRatio;
             return this;
         }
