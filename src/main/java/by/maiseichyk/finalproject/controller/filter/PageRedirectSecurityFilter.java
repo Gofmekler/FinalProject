@@ -31,9 +31,8 @@ public class PageRedirectSecurityFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpSession session = httpRequest.getSession(false);
         UserType userRole = (UserType) session.getAttribute("user_role");
-        LOGGER.info(userRole);
         if (userRole == null) {
-            session.setAttribute("register_msg", "You need to register or login firstly");//FIXME
+            session.setAttribute("register_msg", "You need to register or login firstly");
             httpResponse.sendRedirect(httpRequest.getContextPath() + indexPath);
             return;
         }
@@ -43,7 +42,6 @@ public class PageRedirectSecurityFilter implements Filter {
 //        httpResponse.sendRedirect(httpRequest.getContextPath()+ HOME);
 //
 //    }
-//        httpResponse.sendRedirect(httpRequest.getContextPath() + indexPath);
         chain.doFilter(request, response);
     }
 }

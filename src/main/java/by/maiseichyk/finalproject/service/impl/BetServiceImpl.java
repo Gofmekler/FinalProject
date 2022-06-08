@@ -1,5 +1,6 @@
 package by.maiseichyk.finalproject.service.impl;
 
+import by.maiseichyk.finalproject.dao.Transaction;
 import by.maiseichyk.finalproject.dao.impl.BetDaoImpl;
 import by.maiseichyk.finalproject.dao.impl.UserDaoImpl;
 import by.maiseichyk.finalproject.entity.Bet;
@@ -26,8 +27,8 @@ public class BetServiceImpl implements BetService {
     }
 
     @Override
-    public boolean checkBalance(String userLogin, BigDecimal betAmount) throws ServiceException {//migrate to user service
-        UserDaoImpl userDao = UserDaoImpl.getInstance();
+    public boolean checkBalance(String userLogin, BigDecimal betAmount) throws ServiceException {
+        UserDaoImpl userDao = new UserDaoImpl(false);
         try {
             Optional<User> user = userDao.findUserByLogin(userLogin);
             if (user.isPresent()) {
@@ -38,30 +39,45 @@ public class BetServiceImpl implements BetService {
             }
         } catch (DaoException e) {
             LOGGER.error("Exception while checking users balance: " + e);
-            return false;
+            throw new ServiceException(e);
         }
         return false;
     }
 
     @Override
     public boolean insertBet(Bet bet, User user) throws ServiceException {
-        BetDaoImpl betDao = BetDaoImpl.getInstance();
-        UserDaoImpl userDao = UserDaoImpl.getInstance();
+        BetDaoImpl betDao = new BetDaoImpl(true);
+        UserDaoImpl userDao = new UserDaoImpl(true);
+        Transaction transaction = Transaction.getInstance();
         try {
+            transaction.begin(betDao, userDao);
             if (betDao.insert(bet)) {
                 BigDecimal currentBalance = user.getBalance();
                 BigDecimal betAmount = bet.getBetAmount();
                 BigDecimal actualBalance = currentBalance.subtract(betAmount);
                 String login = user.getLogin();
                 if (userDao.updateUserBalance(actualBalance, login)) {
+                    transaction.commit();
                     return true;
                 }
+                transaction.rollback();
             }
         } catch (DaoException e) {
+            try {
+                transaction.rollback();
+            } catch (DaoException ex) {
+                LOGGER.error("Error while transaction rollback: " + ex);
+            }
             LOGGER.error("Exception while inserting bet: " + e.getMessage());
             throw new ServiceException(e);
+        } finally {
+            try {
+                transaction.end();
+            } catch (DaoException e) {
+                LOGGER.error("Exception while ending transaction: " + e);
+            }
         }
-        return false;
+        return false;//todo boolean status?
     }
 
     @Override
@@ -73,6 +89,6 @@ public class BetServiceImpl implements BetService {
         } else {
             bet.setBetStatus(BetStatus.DRAWN);
         }
-        return bet;//or return bet status to update in event service
+        return bet;
     }
 }

@@ -1,6 +1,7 @@
 package by.maiseichyk.finalproject.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Objects;
 
 public class SportEvent extends AbstractEntity {
@@ -9,9 +10,9 @@ public class SportEvent extends AbstractEntity {
     private SportEventType eventType;
     private BigDecimal firstTeamRatio;
     private BigDecimal secondTeamRatio;
-    private String eventDate;
+    private LocalDate eventDate;
     private String uniqueEventId;
-    private SportEventTeamStatus firstTeamResultStatus;
+    private String eventResult;
 
     public SportEvent() {
     }
@@ -56,11 +57,11 @@ public class SportEvent extends AbstractEntity {
         this.secondTeamRatio = secondTeamRatio;
     }
 
-    public String getEventDate() {
+    public LocalDate getEventDate() {
         return eventDate;
     }
 
-    public void setEventDate(String eventDate) {
+    public void setEventDate(LocalDate eventDate) {
         this.eventDate = eventDate;
     }
 
@@ -72,12 +73,12 @@ public class SportEvent extends AbstractEntity {
         this.uniqueEventId = uniqueEventId;
     }
 
-    public SportEventTeamStatus getFirstTeamResultStatus() {
-        return firstTeamResultStatus;
+    public String getEventResult() {
+        return eventResult;
     }
 
-    public void setFirstTeamResultStatus(SportEventTeamStatus firstTeamResultStatus) {
-        this.firstTeamResultStatus = firstTeamResultStatus;
+    public void setEventResult(String eventResult) {
+        this.eventResult = eventResult;
     }
 
     public static class SportEventBuilder {
@@ -116,7 +117,7 @@ public class SportEvent extends AbstractEntity {
             return this;
         }
 
-        public SportEventBuilder setEventDate(String eventDate) {
+        public SportEventBuilder setEventDate(LocalDate eventDate) {
             sportEvent.eventDate = eventDate;
             return this;
         }
@@ -128,8 +129,8 @@ public class SportEvent extends AbstractEntity {
 
         }
 
-        public SportEventBuilder setFirstTeamResultStatus(SportEventTeamStatus teamStatus){
-            sportEvent.firstTeamResultStatus = teamStatus;
+        public SportEventBuilder setEventResult(String eventResult){
+            sportEvent.eventResult = eventResult;
             return this;
         }
 

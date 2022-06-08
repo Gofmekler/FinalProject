@@ -1,20 +1,23 @@
 package by.maiseichyk.finalproject.service.impl;
 
-import by.maiseichyk.finalproject.dao.impl.BetDaoImpl;
 import by.maiseichyk.finalproject.dao.impl.UserDaoImpl;
 import by.maiseichyk.finalproject.entity.Bet;
-import by.maiseichyk.finalproject.entity.SportEvent;
 import by.maiseichyk.finalproject.entity.User;
 import by.maiseichyk.finalproject.exception.DaoException;
 import by.maiseichyk.finalproject.exception.ServiceException;
 import by.maiseichyk.finalproject.service.UserService;
+import by.maiseichyk.finalproject.util.PasswordEncoder;
+import by.maiseichyk.finalproject.util.validator.impl.UserValidatorImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import static by.maiseichyk.finalproject.entity.UserType.CLIENT;
 
 public class UserServiceImpl implements UserService {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -28,12 +31,36 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> findUser(String login, String password) throws ServiceException {//validate pass login
-        UserDaoImpl userDao = UserDaoImpl.getInstance();
+    public boolean isLoginOccupied(String login) throws ServiceException {
+        UserDaoImpl userDao = new UserDaoImpl(false);
         try {
-            Optional<User> user = userDao.authenticate(login, password);
+            Optional<User> user = userDao.findUserByLogin(login);
+            return user.isPresent();
+        } catch (DaoException e) {
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public boolean isEmailOccupied(String email) throws ServiceException {
+        UserDaoImpl userDao = new UserDaoImpl(false);
+        try {
+            Optional<User> user = userDao.findUserByEmail(email);
+            return user.isPresent();
+        } catch (DaoException e) {
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public Optional<User> findUser(String login, String password) throws ServiceException {//validate pass login
+        UserDaoImpl userDao = new UserDaoImpl(false);
+        try {
+            Optional<User> user = userDao.findUserByLogin(login);
             if (user.isPresent()) {
-                return user;
+                if(PasswordEncoder.encode(password).equals(user.get().getPassword())) {
+                    return user;
+                }
             }
         } catch (DaoException e) {
             throw new ServiceException(e);
@@ -41,29 +68,21 @@ public class UserServiceImpl implements UserService {
         return Optional.empty();
     }
 
-//    @Override
-//    public List<User> identificateWinnersDrawnersLosers(User user, SportEvent sportEvent) throws ServiceException {
-//        BetDaoImpl betDao = BetDaoImpl.getInstance();
-//        UserDaoImpl userDao = UserDaoImpl.getInstance();
-//        List<String> usersLogin = new ArrayList<>();
-//        try {
-//            List<Bet> bets = betDao.findAllBetsByEventId(sportEvent.getUniqueEventId());
-//            for (Bet bet : bets) {
-//                String login = bet.getUserLogin();
-////                BigDecimal betAmount = bet.getBetAmount();
-//                usersLogin.add(login);
-//            }
-//            // FIXME: 27.05.2022 todo realisation updating balances and find winners and losers
-//            userDao.updateUsersBalanceByLogins(usersLogin);
-//        } catch (DaoException e) {
-//            e.printStackTrace();//todo logger
-//        }
-//        return null;
-//    }
+    @Override
+    public boolean checkUserAge(String birthDate) throws ServiceException {
+        UserValidatorImpl userValidator = UserValidatorImpl.getInstance();
+        boolean status = false;
+        if (userValidator.checkDate(birthDate)){
+            if(userValidator.checkAge(birthDate)){
+                status = true;
+            }
+        }
+        return status;
+    }
 
     @Override
     public boolean identificateWinnersDrawnersLosers(List<Bet> bets, List<User> users) throws ServiceException {
-        UserDaoImpl userDao = UserDaoImpl.getInstance();
+        UserDaoImpl userDao = new UserDaoImpl(false);
         for (User user : users) {
             for (Bet bet : bets) {
                 BigDecimal balance = user.getBalance();
@@ -92,7 +111,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> findUsersByLogins(List<String> logins) throws ServiceException {
-        UserDaoImpl userDao = UserDaoImpl.getInstance();
+        UserDaoImpl userDao = new UserDaoImpl(false);
         List<User> matchedUsers = new ArrayList<>();
         List<User> users;
         try {
@@ -108,7 +127,41 @@ public class UserServiceImpl implements UserService {
         return matchedUsers;
     }
 
-    //    @Override
+    @Override
+    public boolean registerUser(Map<String, String> userData) throws ServiceException {
+        UserDaoImpl userDao = new UserDaoImpl(false);
+        UserValidatorImpl userValidator = UserValidatorImpl.getInstance();
+        String password = PasswordEncoder.encode(userData.get("password"));
+        try {
+            if (userValidator.checkUserData(userData)) {
+                User user = new User.UserBuilder()
+                        .setLogin(userData.get("login"))
+                        .setPassword(password)
+                        .setUserRole(CLIENT)
+                        .setEmail(userData.get("email"))
+                        .setName(userData.get("firstName"))
+                        .setLastName(userData.get("lastName"))
+                        .build();
+                userDao.insert(user);
+                return true;
+            }
+            return false;
+        } catch (DaoException e) {
+            LOGGER.info("Exception while registering user: ", e);
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public List<User> findAllUsers() throws ServiceException {
+        return null;
+    }
+
+    @Override
+    public boolean deleteUser(User user) throws ServiceException {
+        return false;
+    }
+
     private BigDecimal calculateUserBalanceAfterEventResult(BigDecimal userBalance, BigDecimal betAmount, BigDecimal teamRatio, boolean isWinner) throws ServiceException {//turn to private?
         BigDecimal winnerSum = betAmount.multiply(teamRatio);
         BigDecimal resultSum;

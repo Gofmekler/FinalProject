@@ -12,6 +12,6 @@ import java.util.Optional;
 public interface BetDao {
     List<Bet> findAllUserBetsByLogin(String userLogin) throws DaoException;
     List<Bet> findAllBetsByEventId(String eventId) throws DaoException;
-    List<Bet> findProcessingBetsForProvidedTeamByEventID(String eventId, String providedTeam) throws DaoException;
+    List<Bet> findProcessingBetsForProvidedTeamByEventId(String eventId, String providedTeam) throws DaoException;
     boolean updateBetStatus(List<Bet> bets) throws DaoException;
 }

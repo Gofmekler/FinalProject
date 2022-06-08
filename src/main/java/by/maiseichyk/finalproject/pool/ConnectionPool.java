@@ -32,7 +32,7 @@ public class ConnectionPool {
         try {
             DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
         } catch (SQLException e) {
-            throw new ExceptionInInitializerError(e.getMessage());//log todo catch to new error page
+            throw new ExceptionInInitializerError(e);//log todo catch to new error page
         }
     }
 

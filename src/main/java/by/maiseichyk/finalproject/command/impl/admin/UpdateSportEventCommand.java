@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import static by.maiseichyk.finalproject.command.PagePath.*;
 import static by.maiseichyk.finalproject.controller.Router.Type.*;
@@ -24,7 +25,7 @@ public class UpdateSportEventCommand implements Command {
         SportEvent sportEvent = new SportEvent.SportEventBuilder()
                 .setUniqueEventId(request.getParameter(UNIQUE_EVENT_ID))
                 .setEventType(SportEventType.valueOf(request.getParameter(EVENT_TYPE)))
-                .setEventDate(request.getParameter(EVENT_DATE))
+                .setEventDate(LocalDate.parse(request.getParameter(EVENT_DATE)))
                 .setFirstTeam(request.getParameter(FIRST_TEAM))
                 .setFirstTeamRatio(BigDecimal.valueOf(Long.parseLong(request.getParameter(FIRST_TEAM_RATIO))))
                 .setSecondTeam(request.getParameter(SECOND_TEAM))

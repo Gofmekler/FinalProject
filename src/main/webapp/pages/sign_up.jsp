@@ -21,8 +21,8 @@
     <br/>
     Email: <input type="text" required= "required" name="email" value=""/>
     <br/>
-    Date of birth: <input type="text" required= "required" name="date_of_birth" value=""/>
-    <br/>
+<%--    Date of birth: <input type="text" required= "required" name="date_of_birth" value=""/>--%>
+<%--    <br/>--%>
     Login: <input type="text" required= "required" name="login" value=""/>
     <br/>
     Password: <input type="password" required="required" name="password" value="">

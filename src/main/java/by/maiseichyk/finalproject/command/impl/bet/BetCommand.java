@@ -61,7 +61,6 @@ public class BetCommand implements Command {
             if (betService.checkBalance(user.getLogin(), bet.getBetAmount())) {
                 if (betService.insertBet(bet, user)) {
                     request.setAttribute("bet_msg", "Success");
-//                    session.setAttribute("bet_msg", "Success");
                     session.setAttribute("user", user);
                     //update bet list session todo
                     return new Router(BET_SUCCESS, FORWARD);

@@ -16,7 +16,7 @@ public class Controller extends HttpServlet {
     private static final Logger LOGGER = LogManager.getLogger();
 
     public void init() {
-        LOGGER.info("Servlet init ----- " + this.getServletInfo());
+        LOGGER.info("Servlet init - " + this.getServletInfo());
     }
 
     @Override
@@ -30,7 +30,7 @@ public class Controller extends HttpServlet {
     }
 
     public void destroy() {
-        LOGGER.info("destroyed --- " + this.getServletName());
+        LOGGER.info("destroyed - " + this.getServletName());
 
     }
 

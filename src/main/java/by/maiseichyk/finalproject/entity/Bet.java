@@ -7,9 +7,9 @@ public class Bet extends AbstractEntity {
     private String id;
     private String userLogin;
     private String sportEventId;
-    private String betDate; //migrate to dateTime
+    private String betDate; //remove
     private BetStatus betStatus;
-    private BigDecimal betAmount; //migrate to big decimal
+    private BigDecimal betAmount;
     private String chosenTeam;
     private BigDecimal winCoefficient;
 

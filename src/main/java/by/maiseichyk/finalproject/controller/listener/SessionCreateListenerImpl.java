@@ -10,13 +10,13 @@ public class SessionCreateListenerImpl implements  HttpSessionListener{
     private static final Logger LOGGER = LogManager.getLogger();
     @Override
     public void sessionCreated(HttpSessionEvent se) {
-        LOGGER.info("-----------------Session created--------------------" + se.getSession().getId());
-        LOGGER.info("-----------------Session created--------------------" + se.getSession().getServletContext());
+        LOGGER.info("Session created - " + se.getSession().getId());
+        LOGGER.info("Session created - " + se.getSession().getServletContext());
     }
 
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
-        LOGGER.info("-----------------Session is destroyed.----------------" + se.getSession().getId());
+        LOGGER.info("Session is destroyed. - " + se.getSession().getId());
     }
 
 }

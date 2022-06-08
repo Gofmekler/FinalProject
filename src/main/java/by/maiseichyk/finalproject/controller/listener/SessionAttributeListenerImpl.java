@@ -10,8 +10,8 @@ public class SessionAttributeListenerImpl implements HttpSessionAttributeListene
     private static final Logger LOGGER = LogManager.getLogger();
     @Override
     public void attributeAdded(HttpSessionBindingEvent sbe) {
-        LOGGER.info("Attribute added +++++------- " + sbe.getSession().getAttribute("user_name"));
-        LOGGER.info("Attribute added +++++-------> " + sbe.getSession().getAttribute("current_page"));
+        LOGGER.info("Attribute added - " + sbe.getSession().getAttribute("user_name"));
+        LOGGER.info("Attribute added + " + sbe.getSession().getAttribute("current_page"));
     }
 
     @Override
@@ -20,7 +20,7 @@ public class SessionAttributeListenerImpl implements HttpSessionAttributeListene
 
     @Override
     public void attributeReplaced(HttpSessionBindingEvent sbe) {
-        LOGGER.info("Attribute Replaced ////------- " + sbe.getSession().getAttribute("user_name"));
-        LOGGER.info("Attribute Replaced ////-------> " + sbe.getSession().getAttribute("current_page"));
+        LOGGER.info("Attribute Replaced / " + sbe.getSession().getAttribute("user_name"));
+        LOGGER.info("Attribute Replaced / " + sbe.getSession().getAttribute("current_page"));
     }
 }

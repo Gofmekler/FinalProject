@@ -7,6 +7,7 @@ import by.maiseichyk.finalproject.dao.mapper.Mapper;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,8 @@ public class EventMapper implements Mapper<SportEvent> {
                     .setFirstTeamRatio(BigDecimal.valueOf(Long.parseLong(resultSet.getString(FIRST_TEAM_RATIO))))
                     .setSecondTeam(resultSet.getString(SECOND_TEAM))
                     .setSecondTeamRatio(BigDecimal.valueOf(Long.parseLong(resultSet.getString(SECOND_TEAM_RATIO))))
-                    .setEventDate(resultSet.getString(EVENT_DATE))
+                    .setEventDate(LocalDate.parse(resultSet.getString(EVENT_DATE)))
+                    .setEventResult(resultSet.getString(EVENT_RESULT))
                     .build();
             sportEventList.add(event);
         }

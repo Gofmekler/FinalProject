@@ -30,7 +30,9 @@ public final class ColumnName {
 
     public static final String EVENT_DATE = "event_date";
 
-    public static final String BET_USER_LOGIN = "user_login";
+    public static final String EVENT_RESULT = "event_result";
+
+    public static final String BET_USER_LOGIN = "login";
 
     public static final String BET_EVENT_ID = "unique_event_id";
 
@@ -45,6 +47,16 @@ public final class ColumnName {
     public static final String CHOSEN_TEAM = "bet_chosen_team";
 
     public static final String WIN_COEFFICIENT = "win_coefficient";
+
+    public static final String CARD_NUMBER = "card_number";
+
+    public static final String CVV_NUMBER = "cvv_number";
+
+    public static final String OWNER_NAME = "owner_name";
+
+    public static final String CARD_BALANCE = "balance";
+
+    public static final String EXPIRATION_DATE = "expiration_date";
 
     private ColumnName() {
     }

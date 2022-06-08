@@ -22,7 +22,7 @@ public class PreControllerFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         HttpSession session = httpServletRequest.getSession(false);
-        LOGGER.info("+++++++++>Session in preController filter ---- " + (session != null ? session.getId() : "session is not created"));
+        LOGGER.info("Session in preController filter - " + (session != null ? session.getId() : "session is not created"));
         chain.doFilter(request, response);
     }
 }
