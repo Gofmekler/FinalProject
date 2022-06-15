@@ -1,8 +1,10 @@
 package by.maiseichyk.finalproject.service.impl;
 
+import by.maiseichyk.finalproject.dao.Transaction;
 import by.maiseichyk.finalproject.dao.impl.UserDaoImpl;
 import by.maiseichyk.finalproject.entity.Bet;
 import by.maiseichyk.finalproject.entity.User;
+import by.maiseichyk.finalproject.entity.UserType;
 import by.maiseichyk.finalproject.exception.DaoException;
 import by.maiseichyk.finalproject.exception.ServiceException;
 import by.maiseichyk.finalproject.service.UserService;
@@ -21,7 +23,7 @@ import static by.maiseichyk.finalproject.entity.UserType.CLIENT;
 
 public class UserServiceImpl implements UserService {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static UserServiceImpl instance = new UserServiceImpl();
+    private static final UserServiceImpl instance = new UserServiceImpl();
 
     private UserServiceImpl() {
     }
@@ -53,12 +55,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> findUser(String login, String password) throws ServiceException {//validate pass login
+    public Optional<User> findUser(String login, String password) throws ServiceException {
         UserDaoImpl userDao = new UserDaoImpl(false);
         try {
             Optional<User> user = userDao.findUserByLogin(login);
             if (user.isPresent()) {
-                if(PasswordEncoder.encode(password).equals(user.get().getPassword())) {
+                if (PasswordEncoder.encode(password).equals(user.get().getPassword())) {
                     return user;
                 }
             }
@@ -72,8 +74,8 @@ public class UserServiceImpl implements UserService {
     public boolean checkUserAge(String birthDate) throws ServiceException {
         UserValidatorImpl userValidator = UserValidatorImpl.getInstance();
         boolean status = false;
-        if (userValidator.checkDate(birthDate)){
-            if(userValidator.checkAge(birthDate)){
+        if (userValidator.checkDate(birthDate)) {
+            if (userValidator.checkAge(birthDate)) {
                 status = true;
             }
         }
@@ -82,7 +84,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean identificateWinnersDrawnersLosers(List<Bet> bets, List<User> users) throws ServiceException {
-        UserDaoImpl userDao = new UserDaoImpl(false);
+        UserDaoImpl userDao = new UserDaoImpl(true);
+        Transaction transaction = Transaction.getInstance();
         for (User user : users) {
             for (Bet bet : bets) {
                 BigDecimal balance = user.getBalance();
@@ -92,7 +95,6 @@ public class UserServiceImpl implements UserService {
                     case WIN:
                         balance = calculateUserBalanceAfterEventResult(balance, betAmount, winCoefficient, true);
                         break;
-//                case LOST:break; not included, bcs gets nothing if lost the bet,  maybe only session attribute
                     case DRAWN:
                         balance = calculateUserBalanceAfterEventResult(balance, betAmount, winCoefficient, false);
                         break;//add default error todo
@@ -101,12 +103,24 @@ public class UserServiceImpl implements UserService {
             }
         }
         try {
+            transaction.begin(userDao);
             userDao.updateUsersBalance(users);
+            return true;
         } catch (DaoException e) {
+            try {
+                transaction.rollback();
+            } catch (DaoException ex) {
+                LOGGER.error("");//todo
+            }
             LOGGER.error("Exception while updating balances: " + e);
             throw new ServiceException(e);
+        } finally {
+            try {
+                transaction.end();
+            } catch (DaoException e) {
+                LOGGER.error("");
+            }
         }
-        return true;
     }
 
     @Override
@@ -122,7 +136,8 @@ public class UserServiceImpl implements UserService {
                 }
             }
         } catch (DaoException e) {
-            e.printStackTrace();//todo log
+            LOGGER.error("Exception while finding user: " + e);
+            throw new ServiceException(e);
         }
         return matchedUsers;
     }
@@ -147,31 +162,162 @@ public class UserServiceImpl implements UserService {
             }
             return false;
         } catch (DaoException e) {
-            LOGGER.info("Exception while registering user: ", e);
+            LOGGER.info("Exception while registering user: " + e);
             throw new ServiceException(e);
         }
     }
 
     @Override
     public List<User> findAllUsers() throws ServiceException {
-        return null;
+        List<User> users;
+        UserDaoImpl userDao = new UserDaoImpl(false);
+        try {
+            users = userDao.findAll();
+        } catch (DaoException e) {
+            throw new ServiceException(e);
+        }
+        return users;
+    }
+
+    @Override
+    public boolean checkUserBalance(User user, BigDecimal amount) {
+        BigDecimal actualBalance = user.getBalance();
+        boolean status = false;
+        switch (actualBalance.subtract(amount).compareTo(BigDecimal.ZERO)) {
+            case 1:
+            case 0:
+                status = true;
+                break;
+            case -1:
+                break;
+        }
+        return status;
     }
 
     @Override
     public boolean deleteUser(User user) throws ServiceException {
-        return false;
+        UserDaoImpl userDao = new UserDaoImpl(false);
+        boolean status = false;
+        try {
+            if (userDao.delete(user)) {
+                status = true;
+            }
+        } catch (DaoException e) {
+            throw new ServiceException(e);
+        }
+        return status;
+    }
+
+    @Override
+    public void updateUserRole(UserType userType, String login) throws ServiceException {
+        UserDaoImpl userDao = new UserDaoImpl(false);
+        boolean status = false;
+        try {
+            Optional<User> user = userDao.findUserByLogin(login);
+            if (user.isPresent()) {
+                user.get().setRole(userType);
+                userDao.updateUserRole(user.get());
+                status = true;
+            }
+        } catch (DaoException e) {
+            LOGGER.error("Exception while updating users role: " + e);
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public void updateUserLogin(String login, String changeTo) throws ServiceException {
+        UserDaoImpl userDao = new UserDaoImpl(false);
+        boolean status = false;
+        try{
+            if(userDao.updateUserLogin(login, changeTo)){
+                status = true;
+            }
+        } catch (DaoException e){
+            LOGGER.error("Exception while updating users login: " + e);
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public void updateUserPass(String login, String password) throws ServiceException {
+        UserDaoImpl userDao = new UserDaoImpl(false);
+        boolean status = false;
+        try{
+            if(userDao.updateUserPass(login, password)){
+                status = true;
+            }
+        } catch (DaoException e){
+            LOGGER.error("Exception while updating users password: " + e);
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public void updateUserName(String login, String name) throws ServiceException {
+        UserDaoImpl userDao = new UserDaoImpl(false);
+        boolean status = false;
+        try{
+            if(userDao.updateUserName(login, name)){
+                status = true;
+            }
+        } catch (DaoException e){
+            LOGGER.error("Exception while updating users name: " + e);
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public void updateUserLastName(String login, String lastName) throws ServiceException {
+        UserDaoImpl userDao = new UserDaoImpl(false);
+        boolean status = false;
+        try{
+            if(userDao.updateUserLastName(login, lastName)){
+                status = true;
+            }
+        } catch (DaoException e){
+            LOGGER.error("Exception while updating users last name: " + e);
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public void updateUserEmail(String login, String email) throws ServiceException {
+        UserDaoImpl userDao = new UserDaoImpl(false);
+        boolean status = false;
+        try{
+            if(userDao.updateUserEmail(login, email)){
+                status = true;
+            }
+        } catch (DaoException e){
+            LOGGER.error("Exception while updating users email: " + e);
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public boolean updateUserBalance(String login, BigDecimal balance) throws ServiceException {
+        UserDaoImpl userDao = new UserDaoImpl(false);
+        boolean status = false;
+        try{
+            if(userDao.updateUserBalance(login, balance)){
+                status = true;
+            }
+        } catch (DaoException e){
+            LOGGER.error("Exception while updating users balance: " + e);
+            throw new ServiceException(e);
+        }
+        return status;
     }
 
     private BigDecimal calculateUserBalanceAfterEventResult(BigDecimal userBalance, BigDecimal betAmount, BigDecimal teamRatio, boolean isWinner) throws ServiceException {//turn to private?
         BigDecimal winnerSum = betAmount.multiply(teamRatio);
         BigDecimal resultSum;
-        if (isWinner) {//WIN OR DRAW, lost not included due to bet algorithm
+        if (isWinner) {
             resultSum = userBalance.add(winnerSum);
         } else {
             resultSum = userBalance.add(betAmount);
         }
         return resultSum;
     }
-
-
 }

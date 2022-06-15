@@ -4,6 +4,7 @@ public enum BetStatus {
     WIN,
     LOST,
     DRAWN,
+    DELETED,
     PROCESSING;
 
     @Override

@@ -2,13 +2,14 @@ package by.maiseichyk.finalproject.command.impl.admin;
 
 import by.maiseichyk.finalproject.command.Command;
 import by.maiseichyk.finalproject.controller.Router;
-import by.maiseichyk.finalproject.dao.impl.UserDaoImpl;
-import by.maiseichyk.finalproject.entity.User;
-import by.maiseichyk.finalproject.entity.UserType;
 import by.maiseichyk.finalproject.exception.CommandException;
-import by.maiseichyk.finalproject.exception.DaoException;
+import by.maiseichyk.finalproject.exception.ServiceException;
+import by.maiseichyk.finalproject.service.impl.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static by.maiseichyk.finalproject.command.PagePath.*;
 import static by.maiseichyk.finalproject.controller.Router.Type.*;
@@ -18,24 +19,33 @@ public class AddUserCommand implements Command {
     @Override
     public Router execute(HttpServletRequest request) throws CommandException {
         HttpSession session = request.getSession(false);
-        UserDaoImpl userDao = UserDaoImpl.getInstance();
-        User user = new User.UserBuilder()
-                .setLogin(request.getParameter(USER_LOGIN))
-                .setPassword(request.getParameter(USER_PASSWORD))
-                .setName(request.getParameter(USER_NAME))
-                .setLastName(request.getParameter(USER_LASTNAME))
-                .setEmail(request.getParameter(USER_EMAIL))
-                .setUserRole(UserType.valueOf(request.getParameter(USER_ROLE)))
-                .build();
+        UserServiceImpl userService = UserServiceImpl.getInstance();
+        Map<String, String> userData = new HashMap<>();
+        userData.put("login", request.getParameter("login"));
+        userData.put("password", request.getParameter("password"));
+        userData.put("firstName", request.getParameter("first_name"));
+        userData.put("lastName", request.getParameter("last_name"));
+        userData.put("birthDate", request.getParameter("birth_date"));
+        userData.put("email", request.getParameter("email"));
         try {
-            if (userDao.insert(user)) {
-                request.setAttribute("command_user_msg", "Inserted successfully");
-                session.setAttribute("users", userDao.findAll());
-            } else {
-                request.setAttribute("command_user_msg", "Cannot insert new user");
+            if (!userService.checkUserAge(request.getParameter("birth_date"))) {
+                request.setAttribute("list_msg", "Cannot register");
             }
-        } catch (DaoException e) {
-            session.setAttribute("error_msg", "Exception in DAO " + e);
+            if (userService.isLoginOccupied(request.getParameter("login"))) {
+                request.setAttribute("list_msg", "Cannot register");
+            }
+            if (userService.isEmailOccupied(request.getParameter("email"))) {
+                request.setAttribute("register_msg", "Cannot register");
+            }
+            if (userService.registerUser(userData)) {
+                session.setAttribute("list_msg", userService.findAllUsers());
+//                session.setAttribute("user", user);
+            } else {
+                request.setAttribute("list_msg", "Cannot register");
+            }
+        } catch (ServiceException e) {
+//            LOGGER.error("Exception while registering user: ", e);
+            session.setAttribute("error", e.getMessage());
             return new Router(ERROR_500, REDIRECT);
         }
         return new Router(USERS_LIST, FORWARD);

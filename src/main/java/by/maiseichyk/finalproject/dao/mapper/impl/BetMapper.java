@@ -31,10 +31,10 @@ public class BetMapper implements Mapper {
                     .setUserLogin(resultSet.getString(BET_USER_LOGIN))
                     .setSportEventId(resultSet.getString(BET_EVENT_ID))
                     .setBetDate(resultSet.getString(BET_DATE))
-                    .setBetAmount(BigDecimal.valueOf(Long.parseLong(resultSet.getString(BET_AMOUNT))))
+                    .setBetAmount(resultSet.getBigDecimal(BET_AMOUNT))
                     .setBetStatus(BetStatus.valueOf(resultSet.getString(BET_STATUS)))
                     .setChosenTeam(resultSet.getString(CHOSEN_TEAM))
-                    .setWinCoefficient(BigDecimal.valueOf(Long.parseLong(resultSet.getString(WIN_COEFFICIENT))))
+                    .setWinCoefficient(resultSet.getBigDecimal(WIN_COEFFICIENT))
                     .build();
             betList.add(bet);
         }

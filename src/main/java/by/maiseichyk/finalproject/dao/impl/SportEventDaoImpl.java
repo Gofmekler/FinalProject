@@ -3,16 +3,18 @@ package by.maiseichyk.finalproject.dao.impl;
 import by.maiseichyk.finalproject.dao.BaseDao;
 import by.maiseichyk.finalproject.dao.SportEventDao;
 import by.maiseichyk.finalproject.entity.SportEvent;
+import by.maiseichyk.finalproject.entity.SportEventType;
 import by.maiseichyk.finalproject.exception.DaoException;
 import by.maiseichyk.finalproject.dao.mapper.impl.EventMapper;
 import by.maiseichyk.finalproject.pool.ConnectionPool;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.sql.Connection;
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,15 +24,21 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
     private static final String DELETE_EVENT = "DELETE FROM testevent WHERE unique_event_id = ?";
     private static final String INSERT_EVENT = "INSERT INTO testevent(event_type, first_team, first_team_ratio, second_team, second_team_ratio, event_date) VALUES (?,?,?,?,?,?)";
     private static final String UPDATE_EVENT = "UPDATE testevent SET event_type = ?, first_team = ?, first_team_ratio = ?, second_team = ?, second_team_ratio = ?, event_date = ? WHERE unique_event_id = ?";
+    private static final String UPDATE_EVENT_TYPE = "UPDATE testevent SET event_type = ? WHERE unique_event_id = ?";
+    private static final String UPDATE_EVENT_FIRST_TEAM_NAME = "UPDATE testevent SET first_team = ? WHERE unique_event_id = ?";
+    private static final String UPDATE_EVENT_FIRST_TEAM_RATIO = "UPDATE testevent SET first_team_ratio = ? WHERE unique_event_id = ?";
+    private static final String UPDATE_EVENT_SECOND_TEAM_NAME = "UPDATE testevent SET second_team = ? WHERE unique_event_id = ?";
+    private static final String UPDATE_EVENT_SECOND_TEAM_RATIO = "UPDATE testevent SET second_team_ratio = ? WHERE unique_event_id = ?";
+    private static final String UPDATE_EVENT_DATE = "UPDATE testevent SET event_date = ? WHERE unique_event_id = ?";
     private static final String SELECT_ALL_EVENTS = "SELECT unique_event_id, event_type, first_team, first_team_ratio, second_team, second_team_ratio, event_date, event_result FROM testevent";
-    private static final String SELECT_ALL_PAST_EVENTS = "SELECT unique_event_id, event_type, first_team, first_team_ratio, second_team, second_team_ratio, event_date, event_result FROM past_event";
+    private static final String SELECT_ALL_PAST_EVENTS = "SELECT unique_event_id, event_type, first_team, first_team_ratio, second_team, second_team_ratio, event_date, event_result FROM past_events";
     private static final String INSERT_PAST_EVENT = "INSERT INTO past_events(unique_event_id, event_type, first_team, first_team_ratio, second_team, second_team_ratio, event_date, event_result) VALUES (?,?,?,?,?,?,?,?)";
 
     public SportEventDaoImpl() {
     }
 
-    public SportEventDaoImpl(boolean isTransaction){
-        if (!isTransaction){
+    public SportEventDaoImpl(boolean isTransaction) {
+        if (!isTransaction) {
             connection = ConnectionPool.getInstance().getConnection();
         }
     }
@@ -147,5 +155,89 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
             throw new DaoException("Error has occurred while finding past events: ", exception);
         }
         return sportEventList;
+    }
+
+    @Override
+    public boolean updateFirstTeamName(String eventId, String changeTo) throws DaoException {
+        boolean match;
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_EVENT_FIRST_TEAM_NAME)) {
+            statement.setString(1, changeTo);
+            statement.setString(2, eventId);
+            statement.executeUpdate();
+            match = true;
+        } catch (SQLException e) {
+            throw new DaoException("Can't update first team info to Database. " + e);
+        }
+        return match;
+    }
+
+    @Override
+    public boolean updateSecondTeamName(String eventId, String changeTo) throws DaoException {
+        boolean match;
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_EVENT_SECOND_TEAM_NAME)) {
+            statement.setString(1, changeTo);
+            statement.setString(2, eventId);
+            statement.executeUpdate();
+            match = true;
+        } catch (SQLException e) {
+            throw new DaoException("Can't update second team info to Database. " + e);
+        }
+        return match;
+    }
+
+    @Override
+    public boolean updateFirstTeamRatio(String eventId, BigDecimal changeTo) throws DaoException {
+        boolean match;
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_EVENT_FIRST_TEAM_RATIO)) {
+            statement.setString(1, changeTo.toString());
+            statement.setString(2, eventId);
+            statement.executeUpdate();
+            match = true;
+        } catch (SQLException e) {
+            throw new DaoException("Can't update first team ratio info to Database. " + e);
+        }
+        return match;
+    }
+
+    @Override
+    public boolean updateSecondTeamRatio(String eventId, BigDecimal changeTo) throws DaoException {
+        boolean match;
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_EVENT_SECOND_TEAM_RATIO)) {
+            statement.setString(1, changeTo.toString());
+            statement.setString(2, eventId);
+            statement.executeUpdate();
+            match = true;
+        } catch (SQLException e) {
+            throw new DaoException("Can't update second team ratio info to Database. " + e);
+        }
+        return match;
+    }
+
+    @Override
+    public boolean updateEventDate(String eventId, LocalDate date) throws DaoException {
+        boolean match;
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_EVENT_DATE)) {
+            statement.setString(1, date.toString());
+            statement.setString(2, eventId);
+            statement.executeUpdate();
+            match = true;
+        } catch (SQLException e) {
+            throw new DaoException("Can't update event date info to Database. " + e);
+        }
+        return match;
+    }
+
+    @Override
+    public boolean updateEventType(String eventId, SportEventType eventType) throws DaoException {
+        boolean match;
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_EVENT_TYPE)) {
+            statement.setString(1, eventType.toString());
+            statement.setString(2, eventId);
+            statement.executeUpdate();
+            match = true;
+        } catch (SQLException e) {
+            throw new DaoException("Can't update event type info to Database. " + e);
+        }
+        return match;
     }
 }

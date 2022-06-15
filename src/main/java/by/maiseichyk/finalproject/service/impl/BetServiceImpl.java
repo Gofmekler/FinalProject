@@ -29,19 +29,20 @@ public class BetServiceImpl implements BetService {
     @Override
     public boolean checkBalance(String userLogin, BigDecimal betAmount) throws ServiceException {
         UserDaoImpl userDao = new UserDaoImpl(false);
+        boolean status = false;
         try {
             Optional<User> user = userDao.findUserByLogin(userLogin);
             if (user.isPresent()) {
                 BigDecimal userBalance = user.get().getBalance();
-                if (userBalance.compareTo(betAmount) >= 0) {//|| userBalance.compareTo(betAmount) > 0) {
-                    return true;
+                if (userBalance.compareTo(betAmount) >= 0) {
+                    status = true;
                 }
             }
         } catch (DaoException e) {
             LOGGER.error("Exception while checking users balance: " + e);
             throw new ServiceException(e);
         }
-        return false;
+        return status;
     }
 
     @Override
@@ -49,6 +50,7 @@ public class BetServiceImpl implements BetService {
         BetDaoImpl betDao = new BetDaoImpl(true);
         UserDaoImpl userDao = new UserDaoImpl(true);
         Transaction transaction = Transaction.getInstance();
+        boolean status = false;
         try {
             transaction.begin(betDao, userDao);
             if (betDao.insert(bet)) {
@@ -56,11 +58,11 @@ public class BetServiceImpl implements BetService {
                 BigDecimal betAmount = bet.getBetAmount();
                 BigDecimal actualBalance = currentBalance.subtract(betAmount);
                 String login = user.getLogin();
-                if (userDao.updateUserBalance(actualBalance, login)) {
+                if (userDao.updateUserBalance(login, actualBalance)) {
                     transaction.commit();
-                    return true;
+                    status = true;
                 }
-                transaction.rollback();
+                transaction.rollback();// FIXME: 13.06.2022
             }
         } catch (DaoException e) {
             try {
@@ -68,7 +70,7 @@ public class BetServiceImpl implements BetService {
             } catch (DaoException ex) {
                 LOGGER.error("Error while transaction rollback: " + ex);
             }
-            LOGGER.error("Exception while inserting bet: " + e.getMessage());
+            LOGGER.error("Exception while inserting bet: " + e);
             throw new ServiceException(e);
         } finally {
             try {
@@ -77,7 +79,7 @@ public class BetServiceImpl implements BetService {
                 LOGGER.error("Exception while ending transaction: " + e);
             }
         }
-        return false;//todo boolean status?
+        return status;
     }
 
     @Override

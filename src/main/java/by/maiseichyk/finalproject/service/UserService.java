@@ -1,9 +1,8 @@
 package by.maiseichyk.finalproject.service;
 
 import by.maiseichyk.finalproject.entity.Bet;
-import by.maiseichyk.finalproject.entity.SportEvent;
 import by.maiseichyk.finalproject.entity.User;
-import by.maiseichyk.finalproject.exception.DaoException;
+import by.maiseichyk.finalproject.entity.UserType;
 import by.maiseichyk.finalproject.exception.ServiceException;
 
 import java.math.BigDecimal;
@@ -20,7 +19,7 @@ public interface UserService {
 
     boolean checkUserAge(String birthDate) throws ServiceException;
 
-    boolean identificateWinnersDrawnersLosers(List<Bet> bets, List<User> users) throws ServiceException;//rename todo
+    boolean identificateWinnersDrawnersLosers(List<Bet> bets, List<User> users) throws ServiceException;
 
     List<User> findUsersByLogins(List<String> logins) throws ServiceException;
 
@@ -28,5 +27,21 @@ public interface UserService {
 
     List<User> findAllUsers() throws ServiceException;
 
+    boolean checkUserBalance(User user, BigDecimal amount);
+
     boolean deleteUser(User user) throws ServiceException;
+
+    void updateUserRole(UserType userType, String login) throws ServiceException;
+
+    void updateUserLogin(String login, String changeTo) throws ServiceException;
+
+    void updateUserPass(String login, String password) throws ServiceException;
+
+    void updateUserName(String login, String name) throws ServiceException;
+
+    void updateUserLastName(String login, String lastName) throws ServiceException;
+
+    void updateUserEmail(String login, String email) throws ServiceException;
+
+    boolean updateUserBalance(String login, BigDecimal balance) throws ServiceException;
 }

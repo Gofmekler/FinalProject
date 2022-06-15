@@ -58,11 +58,6 @@ public class UserValidatorImpl implements UserValidator {
     }
 
     @Override
-    public boolean checkNumber(String number) {
-        return number != null && number.matches(NUMBER_REGEX);
-    }
-
-    @Override
     public boolean checkUserData(Map<String, String> userData) {
         boolean isValid = true;
         if (!checkLogin(userData.get("login"))) {
@@ -94,7 +89,7 @@ public class UserValidatorImpl implements UserValidator {
 
     @Override
     public boolean checkAge(String birthDate) {
-        LocalDate date = LocalDate.parse(birthDate, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        LocalDate date = LocalDate.parse(birthDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         LocalDate todayDate = LocalDate.of(2022, 6, 30);
         return !todayDate.minusYears(18).isBefore(date) || todayDate.minusYears(18).equals(date);//todo
     }

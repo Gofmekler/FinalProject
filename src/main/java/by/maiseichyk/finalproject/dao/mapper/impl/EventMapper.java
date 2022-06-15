@@ -31,9 +31,9 @@ public class EventMapper implements Mapper<SportEvent> {
                     .setUniqueEventId(resultSet.getString(UNIQUE_EVENT_ID))
                     .setEventType(SportEventType.valueOf(resultSet.getString(EVENT_TYPE)))
                     .setFirstTeam(resultSet.getString(FIRST_TEAM))
-                    .setFirstTeamRatio(BigDecimal.valueOf(Long.parseLong(resultSet.getString(FIRST_TEAM_RATIO))))
+                    .setFirstTeamRatio(resultSet.getBigDecimal(FIRST_TEAM_RATIO))
                     .setSecondTeam(resultSet.getString(SECOND_TEAM))
-                    .setSecondTeamRatio(BigDecimal.valueOf(Long.parseLong(resultSet.getString(SECOND_TEAM_RATIO))))
+                    .setSecondTeamRatio(resultSet.getBigDecimal(SECOND_TEAM_RATIO))
                     .setEventDate(LocalDate.parse(resultSet.getString(EVENT_DATE)))
                     .setEventResult(resultSet.getString(EVENT_RESULT))
                     .build();

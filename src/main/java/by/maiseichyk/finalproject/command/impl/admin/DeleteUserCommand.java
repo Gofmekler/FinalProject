@@ -6,8 +6,12 @@ import by.maiseichyk.finalproject.dao.impl.UserDaoImpl;
 import by.maiseichyk.finalproject.entity.User;
 import by.maiseichyk.finalproject.exception.CommandException;
 import by.maiseichyk.finalproject.exception.DaoException;
+import by.maiseichyk.finalproject.exception.ServiceException;
+import by.maiseichyk.finalproject.service.impl.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+
+import java.rmi.server.ServerCloneException;
 
 import static by.maiseichyk.finalproject.command.PagePath.*;
 import static by.maiseichyk.finalproject.controller.Router.Type.*;
@@ -17,18 +21,18 @@ public class DeleteUserCommand implements Command {
     @Override
     public Router execute(HttpServletRequest request) throws CommandException {
         HttpSession session = request.getSession(false);
-        UserDaoImpl userDao = UserDaoImpl.getInstance();
+        UserServiceImpl userService = UserServiceImpl.getInstance();
         User user = new User.UserBuilder()
                 .setLogin(request.getParameter(USER_LOGIN))
                 .build();
         try {
-            if (userDao.delete(user)) {
+            if (userService.deleteUser(user)) {
                 request.setAttribute("command_msg", "Deleted successfully");
-                session.setAttribute("users", userDao.findAll());
+                session.setAttribute("users", userService.findAllUsers());
             } else {
                 request.setAttribute("command_msg", "Cannot delete this user");
             }
-        } catch (DaoException e){
+        } catch (ServiceException e){
             session.setAttribute("command_msg", "Exception in DAO " + e);
             return new Router(ERROR_500, REDIRECT);
         }

@@ -34,7 +34,6 @@ public class AddSportEventCommand implements Command {
         HttpSession session = request.getSession();
         SportEventServiceImpl eventService = SportEventServiceImpl.getInstance();
         Map<String, String> eventData = new HashMap<>();
-//        eventData.put(UNIQUE_EVENT_ID, request.getParameter(UNIQUE_EVENT_ID));
         eventData.put(EVENT_TYPE, request.getParameter(EVENT_TYPE).toUpperCase());
         eventData.put(FIRST_TEAM, request.getParameter(FIRST_TEAM));
         eventData.put(FIRST_TEAM_RATIO, request.getParameter(FIRST_TEAM_RATIO));

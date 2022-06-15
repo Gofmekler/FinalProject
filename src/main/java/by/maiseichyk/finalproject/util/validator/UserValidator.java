@@ -15,8 +15,6 @@ public interface UserValidator {
 
     boolean checkEmail(String email);
 
-    boolean checkNumber(String number);
-
     boolean checkUserData(Map<String, String> userData);
 
     boolean checkAge(String birthDate);

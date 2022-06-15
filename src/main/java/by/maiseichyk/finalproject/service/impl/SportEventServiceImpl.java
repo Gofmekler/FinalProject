@@ -3,28 +3,27 @@ package by.maiseichyk.finalproject.service.impl;
 import by.maiseichyk.finalproject.dao.Transaction;
 import by.maiseichyk.finalproject.dao.impl.BetDaoImpl;
 import by.maiseichyk.finalproject.dao.impl.SportEventDaoImpl;
-import by.maiseichyk.finalproject.entity.Bet;
-import by.maiseichyk.finalproject.entity.SportEvent;
-import by.maiseichyk.finalproject.entity.SportEventType;
+import by.maiseichyk.finalproject.dao.impl.UserDaoImpl;
+import by.maiseichyk.finalproject.entity.*;
 import by.maiseichyk.finalproject.exception.DaoException;
 import by.maiseichyk.finalproject.exception.ServiceException;
 import by.maiseichyk.finalproject.service.SportEventService;
 import by.maiseichyk.finalproject.util.EventResultGenerator;
-import by.maiseichyk.finalproject.util.validator.impl.SportEventValidatorImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static by.maiseichyk.finalproject.dao.ColumnName.*;
 
 public class SportEventServiceImpl implements SportEventService {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final SportEventServiceImpl instance = new SportEventServiceImpl();
+    public static final int LOST = -1;
+    public static final int DRAWN = 0;
+    public static final int WIN = 1;
 
     private SportEventServiceImpl() {
     }
@@ -70,32 +69,31 @@ public class SportEventServiceImpl implements SportEventService {
         List<Bet> betsForFirstTeam;
         try {
             transaction.begin(eventDao, betDao);
-            betsForFirstTeam = betDao.findProcessingBetsForProvidedTeamByEventId(sportEvent.getUniqueEventId(), firstTeam);//todo
+            betsForFirstTeam = betDao.findProcessingBetsForProvidedTeamByEventId(sportEvent.getUniqueEventId(), firstTeam);
             List<Bet> betsForSecondTeam = betDao.findProcessingBetsForProvidedTeamByEventId(sportEvent.getUniqueEventId(), secondTeam);
             switch (firstTeamResult.compareTo(secondTeamResult)) {
-                case -1://less than constant todo
+                case LOST:
                     for (Bet bet : betsForFirstTeam) {
-                        betService.calculateBetSummary(bet, -1);//constant
+                        betService.calculateBetSummary(bet, LOST);
                     }
                     for (Bet bet : betsForSecondTeam) {
-                        betService.calculateBetSummary(bet, 1);
+                        betService.calculateBetSummary(bet, WIN);
                     }
                     break;
-                case 0://equals todo
+                case DRAWN:
                     for (Bet bet : betsForFirstTeam) {
-                        betService.calculateBetSummary(bet, 0);//constant
+                        betService.calculateBetSummary(bet, DRAWN);
                     }
                     for (Bet bet : betsForSecondTeam) {
-                        betService.calculateBetSummary(bet, 0);
+                        betService.calculateBetSummary(bet, DRAWN);
                     }
-
                     break;
-                case 1://greater than
+                case WIN:
                     for (Bet bet : betsForFirstTeam) {
-                        betService.calculateBetSummary(bet, 1);//constant
+                        betService.calculateBetSummary(bet, WIN);
                     }
                     for (Bet bet : betsForSecondTeam) {
-                        betService.calculateBetSummary(bet, -1);
+                        betService.calculateBetSummary(bet, LOST);
                     }
                     break;
             }
@@ -164,15 +162,136 @@ public class SportEventServiceImpl implements SportEventService {
 
     @Override
     public boolean deleteSportEvent(SportEvent sportEvent) throws ServiceException {
-        SportEventDaoImpl eventDao = new SportEventDaoImpl(false);
+        SportEventDaoImpl eventDao = new SportEventDaoImpl(true);
+        BetDaoImpl betDao = new BetDaoImpl(true);
+        UserDaoImpl userDao = new UserDaoImpl(true);
+        UserServiceImpl userService = UserServiceImpl.getInstance();
+        Transaction transaction = Transaction.getInstance();
         try {
-            if (eventDao.delete(sportEvent)) {
-                return true;
+            transaction.begin(betDao, eventDao, userDao);
+            List<Bet> bets = betDao.findAllBetsByEventId(sportEvent.getUniqueEventId());
+            List<String> logins = new ArrayList<>();
+            Map<String, BigDecimal> loginsAndBetAmount = new HashMap<>();
+            for (Bet bet : bets) {
+                String userLogin = bet.getUserLogin();
+                BigDecimal betAmount = bet.getBetAmount();
+                loginsAndBetAmount.put(userLogin, betAmount);
+                bet.setBetStatus(BetStatus.DELETED);
+            }
+            List<User> users = userService.findUsersByLogins(logins);
+            for (User user : users) {
+                BigDecimal betAmount = loginsAndBetAmount.get(user.getLogin());
+                BigDecimal updatedBalance = user.getBalance().add(betAmount);
+                user.setBalance(updatedBalance);
+            }
+            if (userDao.updateUsersBalance(users)) {
+                if (betDao.updateBetStatus(bets)) {
+                    if (eventDao.delete(sportEvent)) {
+                        transaction.commit();
+                        return true;
+                    }
+                }
+                transaction.rollback();
             }
         } catch (DaoException e) {
+            try {
+                transaction.rollback();
+            } catch (DaoException ex) {
+                LOGGER.error("Cant rollback transaction: " + ex);
+            }
             LOGGER.error("Exception while deleting event: " + e);
             throw new ServiceException(e);
+        } finally {
+            try {
+                transaction.end();
+            } catch (DaoException e) {
+                LOGGER.error("Cant end transaction: " + e);
+            }
         }
         return false;
+    }
+
+    @Override
+    public void updateFirstTeamName(String eventId, String changeTo) throws ServiceException {
+        SportEventDaoImpl eventDao = new SportEventDaoImpl(false);
+        boolean status = false;
+        try {
+            if (eventDao.updateFirstTeamName(eventId, changeTo)) {
+                status = true;
+            }
+        } catch (DaoException e) {
+            LOGGER.error("Exception while updating team name: " + e);
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public void updateSecondTeamName(String eventId, String changeTo) throws ServiceException {
+        SportEventDaoImpl eventDao = new SportEventDaoImpl(false);
+        boolean status = false;//status todo
+        try {
+            if (eventDao.updateSecondTeamName(eventId, changeTo)) {
+                status = true;
+            }
+        } catch (DaoException e) {
+            LOGGER.error("Exception while updating team name: " + e);
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public void updateFirstTeamRatio(String eventId, BigDecimal changeTo) throws ServiceException {
+        SportEventDaoImpl eventDao = new SportEventDaoImpl(false);
+        boolean status = false;
+        try {
+            if (eventDao.updateFirstTeamRatio(eventId, changeTo)) {
+                status = true;
+            }
+        } catch (DaoException e) {
+            LOGGER.error("Exception while updating team ratio: " + e);
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public void updateSecondTeamRatio(String eventId, BigDecimal changeTo) throws ServiceException {
+        SportEventDaoImpl eventDao = new SportEventDaoImpl(false);
+        boolean status = false;
+        try {
+            if (eventDao.updateSecondTeamRatio(eventId, changeTo)) {
+                status = true;
+            }
+        } catch (DaoException e) {
+            LOGGER.error("Exception while updating team ratio: " + e);
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public void updateEventDate(String eventId, LocalDate date) throws ServiceException {
+        SportEventDaoImpl eventDao = new SportEventDaoImpl(false);
+        boolean status = false;
+        try {
+            if (eventDao.updateEventDate(eventId, date)) {
+                status = true;
+            }
+        } catch (DaoException e) {
+            LOGGER.error("Exception while updating event date: " + e);
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public void updateEventType(String eventId, SportEventType eventType) throws ServiceException {
+        SportEventDaoImpl eventDao = new SportEventDaoImpl(false);
+        boolean status = false;
+        try {
+            if (eventDao.updateEventType(eventId, eventType)) {
+                status = true;
+            }
+        } catch (DaoException e) {
+            LOGGER.error("Exception while updating event type: " + e);
+            throw new ServiceException(e);
+        }
     }
 }

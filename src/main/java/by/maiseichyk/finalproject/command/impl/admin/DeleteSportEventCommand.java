@@ -6,6 +6,8 @@ import by.maiseichyk.finalproject.dao.impl.SportEventDaoImpl;
 import by.maiseichyk.finalproject.entity.SportEvent;
 import by.maiseichyk.finalproject.exception.CommandException;
 import by.maiseichyk.finalproject.exception.DaoException;
+import by.maiseichyk.finalproject.exception.ServiceException;
+import by.maiseichyk.finalproject.service.impl.SportEventServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -17,22 +19,21 @@ public class DeleteSportEventCommand implements Command {
     @Override
     public Router execute(HttpServletRequest request) throws CommandException {
         HttpSession session = request.getSession();
-        SportEventDaoImpl eventDao = SportEventDaoImpl.getInstance();
+        SportEventServiceImpl eventService = SportEventServiceImpl.getInstance();
         SportEvent event = new SportEvent.SportEventBuilder()
                 .setUniqueEventId(request.getParameter(UNIQUE_EVENT_ID))
                 .build();
         try {
-            if (eventDao.delete(event)) {
+            if (eventService.deleteSportEvent(event)) {
                 request.setAttribute("command_sport_event_msg", "Deleted successfully");
-                session.setAttribute("events", eventDao.findAll());
+                session.setAttribute("events", eventService.findAllOngoingEvents());
             } else {
                 request.setAttribute("command_sport_event_msg", "Cannot delete event");
             }
-        } catch (DaoException e) {
-            session.setAttribute("error_msg", "Exception in DAO " + e);
+        } catch (ServiceException e) {
+            session.setAttribute("error_msg", e.getMessage());
             return new Router(ERROR_500, REDIRECT);
         }
-
         return new Router(EVENTS, FORWARD);
     }
 }

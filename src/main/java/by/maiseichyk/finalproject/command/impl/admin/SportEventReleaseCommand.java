@@ -25,22 +25,25 @@ public class SportEventReleaseCommand implements Command {
     @Override
     public Router execute(HttpServletRequest request) throws CommandException {
         HttpSession session = request.getSession();
-        String eventId = request.getParameter("event_id");//session
+        String eventId = request.getParameter("event_id");
         UserServiceImpl userService = UserServiceImpl.getInstance();
         SportEventServiceImpl sportEventService = SportEventServiceImpl.getInstance();
-        SportEventDaoImpl eventDao = SportEventDaoImpl.getInstance();
+//        SportEventDaoImpl eventDao = SportEventDaoImpl.getInstance();
         List<String> logins = new ArrayList<>();
         List<User> usersWhoTakePartInEvent;
         try {
             Optional<SportEvent> sportEvent = sportEventService.findSportEventById(eventId);
             if (sportEvent.isPresent()) {
-
                 List<Bet> bets = sportEventService.insertEventResult(sportEvent.get());
                 for (Bet bet : bets) {
                     logins.add(bet.getUserLogin());
                 }
                 usersWhoTakePartInEvent = userService.findUsersByLogins(logins);
-                userService.identificateWinnersDrawnersLosers(bets, usersWhoTakePartInEvent);//todo add another branch if smth goes wrong
+                if (userService.identificateWinnersDrawnersLosers(bets, usersWhoTakePartInEvent)){
+                    session.setAttribute("event_msg", "Released successfully");
+                } else {
+                    session.setAttribute("event_msg", "Problem while releasing event");
+                }
             }
             List<SportEvent> events = sportEventService.findAllOngoingEvents();
             session.setAttribute("events", events);

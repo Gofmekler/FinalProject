@@ -3,6 +3,7 @@ package by.maiseichyk.finalproject.dao.impl;
 import by.maiseichyk.finalproject.dao.BaseDao;
 import by.maiseichyk.finalproject.dao.UserDao;
 import by.maiseichyk.finalproject.entity.User;
+import by.maiseichyk.finalproject.entity.UserType;
 import by.maiseichyk.finalproject.exception.DaoException;
 import by.maiseichyk.finalproject.dao.mapper.impl.UserMapper;
 import by.maiseichyk.finalproject.pool.ConnectionPool;
@@ -26,7 +27,12 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     private static final String UPDATE_USER_BALANCE = "UPDATE users SET balance = ? WHERE login = ?";
     private static final String SELECT_ALL_USERS = "SELECT login, password, firstName, lastName, email, role, balance FROM users";
     private static final String SELECT_USER_BALANCE = "SELECT balance FROM users WHERE login = ?";
-    private static final String UPDATE_USERS_BALANCE = "UPDATE users SET balance = ? WHERE login = ?";
+    private static final String UPDATE_USER_ROLE = "UPDATE users SET role = ? WHERE login = ?";
+    private static final String UPDATE_USER_PASSWORD = "UPDATE users SET password = ? WHERE login = ?";
+    private static final String UPDATE_USER_LOGIN = "UPDATE users SET login = ? WHERE login = ?";
+    private static final String UPDATE_USER_NAME = "UPDATE users SET firstName = ? WHERE login = ?";
+    private static final String UPDATE_USER_LASTNAME = "UPDATE users SET lastName = ? WHERE login = ?";
+    private static final String UPDATE_USER_EMAIL = "UPDATE users SET email = ? WHERE login = ?";
 
     public UserDaoImpl() {
     }
@@ -100,21 +106,7 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     }
 
     @Override
-    public BigDecimal getUserBalance(String login) throws DaoException {
-        BigDecimal userBalance;
-        try (PreparedStatement statement = connection.prepareStatement(SELECT_USER_BALANCE)) {
-            statement.setString(1, login);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                userBalance = resultSet.getBigDecimal(USER_BALANCE);
-            }
-        } catch (SQLException e) {
-            throw new DaoException("Can't get users balance: ", e);
-        }
-        return userBalance;
-    }
-
-    @Override
-    public boolean updateUserBalance(BigDecimal balance, String login) throws DaoException {
+    public boolean updateUserBalance(String login, BigDecimal balance) throws DaoException {
         boolean status;
         try (PreparedStatement statement = connection.prepareStatement(UPDATE_USER_BALANCE)) {
             statement.setString(1, balance.toString());
@@ -130,7 +122,7 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     @Override
     public boolean updateUsersBalance(List<User> users) throws DaoException {
         boolean status;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_USERS_BALANCE)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_USER_BALANCE)) {
             for (User user : users) {
                 preparedStatement.setString(1, user.getBalance().toString());
                 preparedStatement.setString(2, user.getLogin());
@@ -146,23 +138,9 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     }
 
     @Override
-    public boolean updateUsersBalanceByLogins(List<User> users) throws DaoException {//updating todo change
-        try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_USERS_BALANCE)) {
-            for (User user : users) {
-                preparedStatement.setString(1, user.getLogin());
-                preparedStatement.addBatch();
-            }
-            preparedStatement.executeBatch();
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        }
-        return true;
-    }
-
-    @Override
     public Optional<User> findUserByLogin(String login) throws DaoException {
         List<User> users;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(FIND_USER_BY_LOGIN)) {//new sql call create
+        try (PreparedStatement preparedStatement = connection.prepareStatement(FIND_USER_BY_LOGIN)) {
             preparedStatement.setString(1, login);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 UserMapper userMapper = UserMapper.getInstance();
@@ -189,5 +167,103 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
             throw new DaoException("Error has occurred while finding user by email: ", e);
         }
         return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
+    }
+
+    @Override
+    public boolean updateUserRole(User user) throws DaoException {
+        boolean status;
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_USER_ROLE)) {
+            statement.setString(1, user.getRole().toString());
+            statement.setString(2, user.getLogin());
+            statement.executeUpdate();
+            status = true;
+        } catch (SQLException e) {
+            throw new DaoException("Can't update users role info to Database: ", e);
+        }
+        return status;
+    }
+
+    @Override
+    public boolean updateUserRole(UserType userType, String login) throws DaoException {
+        boolean status;
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_USER_ROLE)) {
+            statement.setString(1, userType.toString());
+            statement.setString(2, login);
+            statement.executeUpdate();
+            status = true;
+        } catch (SQLException e) {
+            throw new DaoException("Can't update users role info to Database: ", e);
+        }
+        return status;
+    }
+
+    @Override
+    public boolean updateUserLogin(String login, String changeTo) throws DaoException {
+        boolean status;
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_USER_LOGIN)) {
+            statement.setString(1, changeTo);
+            statement.setString(2, login);
+            statement.executeUpdate();
+            status = true;
+        } catch (SQLException e) {
+            throw new DaoException("Can't update users role info to Database: ", e);
+        }
+        return status;
+    }
+
+    @Override
+    public boolean updateUserPass(String login, String password) throws DaoException {
+        boolean status;
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_USER_PASSWORD)) {
+            statement.setString(1, password);
+            statement.setString(2, login);
+            statement.executeUpdate();
+            status = true;
+        } catch (SQLException e) {
+            throw new DaoException("Can't update users role info to Database: ", e);
+        }
+        return status;
+    }
+
+    @Override
+    public boolean updateUserName(String login, String name) throws DaoException {
+        boolean status;
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_USER_NAME)) {
+            statement.setString(1, name);
+            statement.setString(2, login);
+            statement.executeUpdate();
+            status = true;
+        } catch (SQLException e) {
+            throw new DaoException("Can't update users role info to Database: ", e);
+        }
+        return status;
+    }
+
+    @Override
+    public boolean updateUserLastName(String login, String lastName) throws DaoException {
+        boolean status;
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_USER_LASTNAME)) {
+            statement.setString(1, lastName);
+            statement.setString(2, login);
+            statement.executeUpdate();
+            status = true;
+        } catch (SQLException e) {
+            throw new DaoException("Can't update users role info to Database: ", e);
+        }
+        return status;
+    }
+
+    @Override
+    public boolean updateUserEmail(String login, String email) throws DaoException {
+        boolean status;
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_USER_EMAIL)) {
+            statement.setString(1, email);
+            statement.setString(2, login);
+            statement.executeUpdate();
+            status = true;
+        } catch (SQLException e) {
+            throw new DaoException("Can't update users role info to Database: ", e);
+        }
+        return status;
     }
 }

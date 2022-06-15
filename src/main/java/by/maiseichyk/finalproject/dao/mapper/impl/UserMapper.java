@@ -32,7 +32,7 @@ public class UserMapper implements Mapper<User> {
                     .setLastName(resultSet.getString(USER_LASTNAME))
                     .setEmail(resultSet.getString(USER_EMAIL))
                     .setUserRole(UserType.valueOf(resultSet.getString(USER_ROLE)))
-                    .setBalance(BigDecimal.valueOf(Long.parseLong(resultSet.getString(USER_BALANCE))))
+                    .setBalance(resultSet.getBigDecimal(USER_BALANCE))
                     .build();
             userList.add(user);
         }

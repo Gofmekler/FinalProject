@@ -11,7 +11,5 @@ public interface BankCardValidator {
 
     boolean checkCVVNumber(String cvvNumber);
 
-    boolean checkBalance(String balance);
-
     boolean checkCardData(Map<String, String> cardData);
 }

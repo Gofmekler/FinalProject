@@ -10,18 +10,11 @@ public class BankCardValidatorImpl implements BankCardValidator {
     private static final String OWNER_NAME_REGEX = "[A-Z ]{3,30}";
     private static final String EXPIRATION_DATE_REGEX = "(0[1-9]|1[0-2])/(2[2-6])";
     private static final String CVV_NUMBER_REGEX = "\\d{3}";
-    private static final String BALANCE_REGEX = "^((\\d{2,4}\\.\\d{2})|(\\d{2,4}))$";
     private static final BankCardValidatorImpl instance = new BankCardValidatorImpl();
 
     private BankCardValidatorImpl() {
-
     }
 
-    /**
-     * Gets instance.
-     *
-     * @return the instance
-     */
     public static BankCardValidatorImpl getInstance() {
         return instance;
     }
@@ -44,11 +37,6 @@ public class BankCardValidatorImpl implements BankCardValidator {
     @Override
     public boolean checkCVVNumber(String cvvNumber) {
         return cvvNumber != null && cvvNumber.matches(CVV_NUMBER_REGEX);
-    }
-
-    @Override
-    public boolean checkBalance(String balance) {
-        return balance != null && balance.matches(BALANCE_REGEX);
     }
 
     @Override
