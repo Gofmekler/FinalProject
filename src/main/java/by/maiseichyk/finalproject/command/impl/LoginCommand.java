@@ -1,10 +1,11 @@
 package by.maiseichyk.finalproject.command.impl;
 
 import by.maiseichyk.finalproject.command.Command;
-import by.maiseichyk.finalproject.command.PagePath;
+import by.maiseichyk.finalproject.command.RequestAttribute;
+import by.maiseichyk.finalproject.command.RequestParameter;
+import by.maiseichyk.finalproject.command.SessionAttribute;
 import by.maiseichyk.finalproject.controller.Router;
 import by.maiseichyk.finalproject.entity.User;
-import by.maiseichyk.finalproject.entity.UserType;
 import by.maiseichyk.finalproject.exception.CommandException;
 import by.maiseichyk.finalproject.exception.ServiceException;
 import by.maiseichyk.finalproject.service.UserService;
@@ -21,26 +22,28 @@ import static by.maiseichyk.finalproject.controller.Router.Type.*;
 
 public class LoginCommand implements Command {
     private static final Logger LOGGER = LogManager.getLogger();
+    private static final String INVALID_DATA = "error.sign_in";
+
     @Override
-    public Router execute(HttpServletRequest request) {
-        String login = request.getParameter("login");
-        String password = request.getParameter("password");//string to constant todo
+    public Router execute(HttpServletRequest request) throws CommandException {
+        String login = request.getParameter(RequestParameter.LOGIN);
+        String password = request.getParameter(RequestParameter.PASSWORD);
         UserService userService = UserServiceImpl.getInstance();
-        HttpSession session = request.getSession(false);
+        HttpSession session = request.getSession();
         try {
-            Optional<User> user = userService.findUser(login,password);
+            Optional<User> user = userService.findUser(login, password);
             if (user.isPresent()) {
-                session.setAttribute("user_name", login);
-                session.setAttribute("user_role", user.get().getRole());
-                session.setAttribute("user", user.get());
+                session.setAttribute(SessionAttribute.USER_LOGIN, login);
+                session.setAttribute(SessionAttribute.ROLE, user.get().getRole());
+                session.setAttribute(SessionAttribute.USER, user.get());
                 return new Router(HOME, FORWARD);
             } else {
-                request.setAttribute("login_msg", "Invalid password or login");
+                request.setAttribute(RequestAttribute.SIGN_IN_MESSAGE, INVALID_DATA);
                 return new Router(WELCOME, FORWARD);
             }
         } catch (ServiceException e) {
-            LOGGER.info("Exception in login command, ", e);
-            return new Router(ERROR_500, REDIRECT);
+            LOGGER.info("Exception in login command. " + e);
+            throw new CommandException("Exception in login command. ", e);
         }
     }
 }

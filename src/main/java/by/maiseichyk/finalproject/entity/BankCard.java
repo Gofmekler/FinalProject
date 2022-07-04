@@ -18,32 +18,16 @@ public class BankCard extends AbstractEntity {
         return cardNumber;
     }
 
-    public void setCardNumber(long cardNumber) {
-        this.cardNumber = cardNumber;
-    }
-
     public LocalDate getExpirationDate() {
         return expirationDate;
-    }
-
-    public void setExpirationDate(LocalDate expirationDate) {
-        this.expirationDate = expirationDate;
     }
 
     public String getOwnerName() {
         return ownerName;
     }
 
-    public void setOwnerName(String ownerName) {
-        this.ownerName = ownerName;
-    }
-
     public int getCvvNumber() {
         return cvvNumber;
-    }
-
-    public void setCvvNumber(int cvvNumber) {
-        this.cvvNumber = cvvNumber;
     }
 
     public BigDecimal getBalance() {
@@ -79,7 +63,11 @@ public class BankCard extends AbstractEntity {
     }
 
     public static class BankCardBuilder {
-        private BankCard bankCard;
+        private final BankCard bankCard;
+
+        public BankCardBuilder() {
+            bankCard = new BankCard();
+        }
 
         public BankCardBuilder setCardNumber(long cardNumber) {
             bankCard.cardNumber = cardNumber;

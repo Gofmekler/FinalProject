@@ -13,10 +13,6 @@ import java.io.IOException;
 public class PreIndexFilter implements Filter {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    public void init(FilterConfig config) throws ServletException {
-    }
-
-
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
@@ -24,8 +20,4 @@ public class PreIndexFilter implements Filter {
         LOGGER.info("Session in preIndex filter " + (session != null ? session.getId() : "session is not created"));
         chain.doFilter(request, response);
     }
-
-    public void destroy() {
-    }
-
 }

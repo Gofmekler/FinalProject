@@ -11,7 +11,6 @@ public class SportEvent extends AbstractEntity {
     private BigDecimal firstTeamRatio;
     private BigDecimal secondTeamRatio;
     private LocalDate eventDate;
-    private String uniqueEventId;
     private String eventResult;
 
     public SportEvent() {
@@ -21,16 +20,8 @@ public class SportEvent extends AbstractEntity {
         return firstTeam;
     }
 
-    public void setFirstTeam(String firstTeam) {
-        this.firstTeam = firstTeam;
-    }
-
     public String getSecondTeam() {
         return secondTeam;
-    }
-
-    public void setSecondTeam(String secondTeam) {
-        this.secondTeam = secondTeam;
     }
 
     public SportEventType getEventType() {
@@ -45,40 +36,16 @@ public class SportEvent extends AbstractEntity {
         return firstTeamRatio;
     }
 
-    public void setFirstTeamRatio(BigDecimal firstTeamRatio) {
-        this.firstTeamRatio = firstTeamRatio;
-    }
-
     public BigDecimal getSecondTeamRatio() {
         return secondTeamRatio;
-    }
-
-    public void setSecondTeamRatio(BigDecimal secondTeamRatio) {
-        this.secondTeamRatio = secondTeamRatio;
     }
 
     public LocalDate getEventDate() {
         return eventDate;
     }
 
-    public void setEventDate(LocalDate eventDate) {
-        this.eventDate = eventDate;
-    }
-
-    public String getUniqueEventId() {
-        return uniqueEventId;
-    }
-
-    public void setUniqueEventId(String uniqueEventId) {
-        this.uniqueEventId = uniqueEventId;
-    }
-
     public String getEventResult() {
         return eventResult;
-    }
-
-    public void setEventResult(String eventResult) {
-        this.eventResult = eventResult;
     }
 
     public static class SportEventBuilder {
@@ -86,6 +53,11 @@ public class SportEvent extends AbstractEntity {
 
         public SportEventBuilder() {
             sportEvent = new SportEvent();
+        }
+
+        public SportEventBuilder setId(int id) {
+            sportEvent.setId(id);
+            return this;
         }
 
         public SportEventBuilder setFirstTeam(String firstTeam) {
@@ -122,14 +94,7 @@ public class SportEvent extends AbstractEntity {
             return this;
         }
 
-
-        public SportEventBuilder setUniqueEventId(String uniqueEventId) {
-            sportEvent.uniqueEventId = uniqueEventId;
-            return this;
-
-        }
-
-        public SportEventBuilder setEventResult(String eventResult){
+        public SportEventBuilder setEventResult(String eventResult) {
             sportEvent.eventResult = eventResult;
             return this;
         }
@@ -144,12 +109,12 @@ public class SportEvent extends AbstractEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SportEvent that = (SportEvent) o;
-        return Objects.equals(firstTeam, that.firstTeam) && Objects.equals(secondTeam, that.secondTeam) && eventType == that.eventType && Objects.equals(firstTeamRatio, that.firstTeamRatio) && Objects.equals(secondTeamRatio, that.secondTeamRatio) && Objects.equals(eventDate, that.eventDate) && Objects.equals(uniqueEventId, that.uniqueEventId);
+        return Objects.equals(firstTeam, that.firstTeam) && Objects.equals(secondTeam, that.secondTeam) && eventType == that.eventType && Objects.equals(firstTeamRatio, that.firstTeamRatio) && Objects.equals(secondTeamRatio, that.secondTeamRatio) && Objects.equals(eventDate, that.eventDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(firstTeam, secondTeam, eventType, firstTeamRatio, secondTeamRatio, eventDate, uniqueEventId);
+        return Objects.hash(firstTeam, secondTeam, eventType, firstTeamRatio, secondTeamRatio, eventDate);
     }
 
     @Override
@@ -161,7 +126,6 @@ public class SportEvent extends AbstractEntity {
                 ", firstTeamRatio='" + firstTeamRatio + '\'' +
                 ", secondTeamRatio='" + secondTeamRatio + '\'' +
                 ", event_date='" + eventDate + '\'' +
-                ", unique_event_id='" + uniqueEventId + '\'' +
                 '}' + '\n';
     }
 }

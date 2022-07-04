@@ -21,9 +21,9 @@ import java.util.Optional;
 public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEventDao {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String ID_EVENT_SELECT = "SELECT unique_event_id, event_type, first_team, first_team_ratio, second_team, second_team_ratio, event_date, event_result FROM testevent WHERE unique_event_id = ?";
+    private static final String SELECT_EVENT_BY_TEAMS_NAME = "SELECT unique_event_id, event_type, first_team, first_team_ratio, second_team, second_team_ratio, event_date, event_result FROM testevent WHERE first_team = ? AND second_team = ?";
     private static final String DELETE_EVENT = "DELETE FROM testevent WHERE unique_event_id = ?";
     private static final String INSERT_EVENT = "INSERT INTO testevent(event_type, first_team, first_team_ratio, second_team, second_team_ratio, event_date) VALUES (?,?,?,?,?,?)";
-    private static final String UPDATE_EVENT = "UPDATE testevent SET event_type = ?, first_team = ?, first_team_ratio = ?, second_team = ?, second_team_ratio = ?, event_date = ? WHERE unique_event_id = ?";
     private static final String UPDATE_EVENT_TYPE = "UPDATE testevent SET event_type = ? WHERE unique_event_id = ?";
     private static final String UPDATE_EVENT_FIRST_TEAM_NAME = "UPDATE testevent SET first_team = ? WHERE unique_event_id = ?";
     private static final String UPDATE_EVENT_FIRST_TEAM_RATIO = "UPDATE testevent SET first_team_ratio = ? WHERE unique_event_id = ?";
@@ -33,9 +33,6 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
     private static final String SELECT_ALL_EVENTS = "SELECT unique_event_id, event_type, first_team, first_team_ratio, second_team, second_team_ratio, event_date, event_result FROM testevent";
     private static final String SELECT_ALL_PAST_EVENTS = "SELECT unique_event_id, event_type, first_team, first_team_ratio, second_team, second_team_ratio, event_date, event_result FROM past_events";
     private static final String INSERT_PAST_EVENT = "INSERT INTO past_events(unique_event_id, event_type, first_team, first_team_ratio, second_team, second_team_ratio, event_date, event_result) VALUES (?,?,?,?,?,?,?,?)";
-
-    public SportEventDaoImpl() {
-    }
 
     public SportEventDaoImpl(boolean isTransaction) {
         if (!isTransaction) {
@@ -56,7 +53,8 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
             statement.executeUpdate();
             match = true;
         } catch (SQLException e) {
-            throw new DaoException("Can't insert new sportEvent to Database. " + e);
+            LOGGER.info("Can't insert new event to Database. " + e);
+            throw new DaoException("Can't insert new event to Database. " + e);
         }
         return match;
     }
@@ -65,10 +63,11 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
     public boolean delete(SportEvent sportEvent) throws DaoException {
         boolean match;
         try (PreparedStatement statement = connection.prepareStatement(DELETE_EVENT)) {
-            statement.setString(1, sportEvent.getUniqueEventId());
+            statement.setString(1, String.valueOf(sportEvent.getId()));
             statement.executeUpdate();
             match = true;
         } catch (SQLException e) {
+            LOGGER.info("Can't delete event to Database. " + e);
             throw new DaoException("Can't delete event in Database. " + e);
         }
         return match;
@@ -82,29 +81,10 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
             EventMapper eventMapper = EventMapper.getInstance();
             sportEventList = eventMapper.retrieve(resultSet);
         } catch (SQLException exception) {
-//                LOGGER.error("Error has occurred while finding users: " + exception);
+            LOGGER.error("Error has occurred while finding events: " + exception);
             throw new DaoException("Error has occurred while finding events: ", exception);
         }
         return sportEventList;
-    }
-
-    @Override
-    public boolean update(SportEvent sportEvent) throws DaoException {
-        boolean match;
-        try (PreparedStatement statement = connection.prepareStatement(UPDATE_EVENT)) {
-            statement.setString(1, sportEvent.getEventType().toString());
-            statement.setString(2, sportEvent.getFirstTeam());
-            statement.setString(3, String.valueOf(sportEvent.getFirstTeamRatio()));
-            statement.setString(4, sportEvent.getSecondTeam());
-            statement.setString(5, String.valueOf(sportEvent.getSecondTeamRatio()));
-            statement.setString(6, sportEvent.getEventDate().toString());
-            statement.setString(7, sportEvent.getUniqueEventId());
-            statement.executeUpdate();
-            match = true;
-        } catch (SQLException e) {
-            throw new DaoException("Can't update sportEvent info to Database. " + e);
-        }
-        return match;
     }
 
     @Override
@@ -124,10 +104,27 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
     }
 
     @Override
+    public List<SportEvent> findSportEventByTeamsName(String firstTeamName, String secondTeamName) throws DaoException {
+        List<SportEvent> sportEventList;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SELECT_EVENT_BY_TEAMS_NAME)) {
+            preparedStatement.setString(1, firstTeamName);
+            preparedStatement.setString(2, secondTeamName);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                EventMapper eventMapper = EventMapper.getInstance();
+                sportEventList = eventMapper.retrieve(resultSet);
+            }
+        } catch (SQLException exception) {
+            LOGGER.error("Error has occurred while finding event by teams name: " + exception.getMessage());
+            throw new DaoException("Error has occurred while finding event by teams name: ", exception);
+        }
+        return sportEventList;
+    }
+
+    @Override
     public boolean insertPastSportEvent(SportEvent sportEvent, String result) throws DaoException {
         boolean match;
         try (PreparedStatement statement = connection.prepareStatement(INSERT_PAST_EVENT)) {
-            statement.setString(1, sportEvent.getUniqueEventId());
+            statement.setString(1, String.valueOf(sportEvent.getId()));
             statement.setString(2, sportEvent.getEventType().toString());
             statement.setString(3, sportEvent.getFirstTeam());
             statement.setString(4, String.valueOf(sportEvent.getFirstTeamRatio()));
@@ -138,7 +135,8 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
             statement.executeUpdate();
             match = true;
         } catch (SQLException e) {
-            throw new DaoException("Can't insert new sportEvent to Database. " + e);
+            LOGGER.info("Can't insert passed event to Database. " + e);
+            throw new DaoException("Can't insert passed event to Database. " + e);
         }
         return match;
     }
@@ -151,7 +149,7 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
             EventMapper eventMapper = EventMapper.getInstance();
             sportEventList = eventMapper.retrieve(resultSet);
         } catch (SQLException exception) {
-            LOGGER.error("Error has occurred while finding past users: " + exception);
+            LOGGER.error("Error has occurred while finding past events: " + exception);
             throw new DaoException("Error has occurred while finding past events: ", exception);
         }
         return sportEventList;
@@ -166,6 +164,7 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
             statement.executeUpdate();
             match = true;
         } catch (SQLException e) {
+            LOGGER.info("Can't update first team info to Database. " + e);
             throw new DaoException("Can't update first team info to Database. " + e);
         }
         return match;
@@ -180,6 +179,7 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
             statement.executeUpdate();
             match = true;
         } catch (SQLException e) {
+            LOGGER.info("Can't update second team info to Database. " + e);
             throw new DaoException("Can't update second team info to Database. " + e);
         }
         return match;
@@ -194,6 +194,7 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
             statement.executeUpdate();
             match = true;
         } catch (SQLException e) {
+            LOGGER.info("Can't update first team ratio info to Database. " + e);
             throw new DaoException("Can't update first team ratio info to Database. " + e);
         }
         return match;
@@ -208,6 +209,7 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
             statement.executeUpdate();
             match = true;
         } catch (SQLException e) {
+            LOGGER.info("Can't update second team ratio info to Database. " + e);
             throw new DaoException("Can't update second team ratio info to Database. " + e);
         }
         return match;
@@ -222,6 +224,7 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
             statement.executeUpdate();
             match = true;
         } catch (SQLException e) {
+            LOGGER.info("Can't update event date info to Database. " + e);
             throw new DaoException("Can't update event date info to Database. " + e);
         }
         return match;
@@ -236,6 +239,7 @@ public class SportEventDaoImpl extends BaseDao<SportEvent> implements SportEvent
             statement.executeUpdate();
             match = true;
         } catch (SQLException e) {
+            LOGGER.info("Can't update event type info to Database. " + e);
             throw new DaoException("Can't update event type info to Database. " + e);
         }
         return match;

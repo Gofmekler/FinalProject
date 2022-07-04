@@ -4,10 +4,8 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 public class Bet extends AbstractEntity {
-    private String id;
     private String userLogin;
     private String sportEventId;
-    private String betDate; //remove
     private BetStatus betStatus;
     private BigDecimal betAmount;
     private String chosenTeam;
@@ -19,10 +17,6 @@ public class Bet extends AbstractEntity {
     public Bet(String userLogin, String sportEventId) {
         this.userLogin = userLogin;
         this.sportEventId = sportEventId;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public String getUserLogin() {
@@ -39,14 +33,6 @@ public class Bet extends AbstractEntity {
 
     public void setSportEventId(String sportEventId) {
         this.sportEventId = sportEventId;
-    }
-
-    public String getBetDate() {
-        return betDate;
-    }
-
-    public void setBetDate(String betDate) {
-        this.betDate = betDate;
     }
 
     public BetStatus getBetStatus() {
@@ -88,8 +74,8 @@ public class Bet extends AbstractEntity {
             bet = new Bet();
         }
 
-        public BetBuilder setId(String id) {
-            bet.id = id;
+        public BetBuilder setId(int id) {
+            bet.setId(id);
             return this;
         }
 
@@ -98,7 +84,7 @@ public class Bet extends AbstractEntity {
             return this;
         }
 
-        public BetBuilder setWinCoefficient(BigDecimal winCoefficient){
+        public BetBuilder setWinCoefficient(BigDecimal winCoefficient) {
             bet.winCoefficient = winCoefficient;
             return this;
         }
@@ -108,12 +94,7 @@ public class Bet extends AbstractEntity {
             return this;
         }
 
-        public BetBuilder setBetDate(String betDate) {
-            bet.betDate = betDate;
-            return this;
-        }
-
-        public BetBuilder setChosenTeam(String chosenTeam){
+        public BetBuilder setChosenTeam(String chosenTeam) {
             bet.chosenTeam = chosenTeam;
             return this;
         }
@@ -134,27 +115,28 @@ public class Bet extends AbstractEntity {
     }
 
     @Override
-    public String toString() {
-        return "Bet{" +
-                "id='" + id + '\'' +
-                ", user=" + userLogin +
-                ", sportEvent=" + sportEventId +
-                ", betDate='" + betDate + '\'' +
-                ", betStatus=" + betStatus +
-                ", betAmount='" + betAmount + '\'' +
-                '}';
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         Bet bet = (Bet) o;
-        return Objects.equals(id, bet.id) && Objects.equals(userLogin, bet.userLogin) && Objects.equals(sportEventId, bet.sportEventId) && Objects.equals(betDate, bet.betDate) && betStatus == bet.betStatus && Objects.equals(betAmount, bet.betAmount);
+        return Objects.equals(userLogin, bet.userLogin) && Objects.equals(sportEventId, bet.sportEventId) && betStatus == bet.betStatus && Objects.equals(betAmount, bet.betAmount) && Objects.equals(chosenTeam, bet.chosenTeam) && Objects.equals(winCoefficient, bet.winCoefficient);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, userLogin, sportEventId, betDate, betStatus, betAmount);
+        return Objects.hash(super.hashCode(), userLogin, sportEventId, betStatus, betAmount, chosenTeam, winCoefficient);
+    }
+
+    @Override
+    public String toString() {
+        return "Bet{" +
+                "userLogin='" + userLogin + '\'' +
+                ", sportEventId='" + sportEventId + '\'' +
+                ", betStatus=" + betStatus +
+                ", betAmount=" + betAmount +
+                ", chosenTeam='" + chosenTeam + '\'' +
+                ", winCoefficient=" + winCoefficient +
+                '}';
     }
 }

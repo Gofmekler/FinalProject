@@ -14,7 +14,7 @@ import java.util.List;
 import static by.maiseichyk.finalproject.dao.ColumnName.*;
 
 public class EventMapper implements Mapper<SportEvent> {
-    private static EventMapper instance = new EventMapper();
+    private static final EventMapper instance = new EventMapper();
 
     private EventMapper() {
     }
@@ -28,7 +28,7 @@ public class EventMapper implements Mapper<SportEvent> {
         List<SportEvent> sportEventList = new ArrayList<>();
         while (resultSet.next()) {
             SportEvent event = new SportEvent.SportEventBuilder()
-                    .setUniqueEventId(resultSet.getString(UNIQUE_EVENT_ID))
+                    .setId(Integer.parseInt(resultSet.getString(UNIQUE_EVENT_ID)))
                     .setEventType(SportEventType.valueOf(resultSet.getString(EVENT_TYPE)))
                     .setFirstTeam(resultSet.getString(FIRST_TEAM))
                     .setFirstTeamRatio(resultSet.getBigDecimal(FIRST_TEAM_RATIO))

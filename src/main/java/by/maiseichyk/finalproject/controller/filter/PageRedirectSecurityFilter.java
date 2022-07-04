@@ -1,8 +1,10 @@
 package by.maiseichyk.finalproject.controller.filter;
 
-import by.maiseichyk.finalproject.entity.UserType;
+import by.maiseichyk.finalproject.command.*;
+import by.maiseichyk.finalproject.entity.UserRole;
 import jakarta.servlet.*;
-import jakarta.servlet.annotation.*;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.annotation.WebInitParam;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -11,18 +13,15 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
-import static by.maiseichyk.finalproject.command.PagePath.HOME;
-
 @WebFilter(filterName = "PageRedirectSecurityFilter", urlPatterns = "/pages/*", initParams = {@WebInitParam(name = "INDEX_PATH", value = "/index.jsp")})
 public class PageRedirectSecurityFilter implements Filter {
     private static final Logger LOGGER = LogManager.getLogger();
     private String indexPath;
+    private String errorPath;
 
-    public void init(FilterConfig config) throws ServletException {
+    public void init(FilterConfig config) {
         indexPath = config.getInitParameter("INDEX_PATH");
-    }
-
-    public void destroy() {
+        errorPath = PagePath.ERROR_500;
     }
 
     @Override
@@ -30,18 +29,20 @@ public class PageRedirectSecurityFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpSession session = httpRequest.getSession(false);
-        UserType userRole = (UserType) session.getAttribute("user_role");
-        if (userRole == null) {
-            session.setAttribute("register_msg", "You need to register or login firstly");
-            httpResponse.sendRedirect(httpRequest.getContextPath() + indexPath);
-            return;
+        UserRole role = UserRole.valueOf(String.valueOf(session.getAttribute(SessionAttribute.ROLE)));
+        LOGGER.info("Current user role - " + role);
+        if (role.equals(UserRole.GUEST)) {
+            if (httpRequest.getParameter(RequestParameter.COMMAND) != null) {
+                String commandType = httpRequest.getParameter(RequestParameter.COMMAND);
+                Command definedCommand = CommandType.define(commandType.toUpperCase());
+                if (CommandType.DEFAULT.getCommand() != definedCommand) {
+                    httpResponse.sendRedirect(httpRequest.getContextPath() + indexPath);
+                } else {
+                    httpResponse.sendRedirect(httpRequest.getContextPath() + errorPath);
+                }
+                return;
+            }
         }
-//        else{//checking user role
-////            RequestDispatcher requestDispatcher = request.getServletContext().getRequestDispatcher("/pages/main.jsp");
-////            requestDispatcher.forward(httpRequest, httpResponse);
-//        httpResponse.sendRedirect(httpRequest.getContextPath()+ HOME);
-//
-//    }
         chain.doFilter(request, response);
     }
 }

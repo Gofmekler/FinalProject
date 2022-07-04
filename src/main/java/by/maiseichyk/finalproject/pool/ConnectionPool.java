@@ -23,16 +23,16 @@ public class ConnectionPool {
     private static final AtomicBoolean isCreated = new AtomicBoolean(false);
     private static final int DEFAULT_POOL_SIZE = 8;
     private static ConnectionPool instance;
-    private static ReentrantLock reentrantLock = new ReentrantLock();
-    private BlockingQueue<ProxyConnection> freeConnections = new LinkedBlockingQueue<>(DEFAULT_POOL_SIZE);//const + add new blocking queue
-    private BlockingQueue<ProxyConnection> usedConnections = new LinkedBlockingQueue<>(DEFAULT_POOL_SIZE);//new queue for checking
+    private static final ReentrantLock reentrantLock = new ReentrantLock();
+    private final BlockingQueue<ProxyConnection> freeConnections = new LinkedBlockingQueue<>(DEFAULT_POOL_SIZE);
+    private final BlockingQueue<ProxyConnection> busyConnections = new LinkedBlockingQueue<>(DEFAULT_POOL_SIZE);
 
 
     {
         try {
             DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
         } catch (SQLException e) {
-            throw new ExceptionInInitializerError(e);//log todo catch to new error page
+            throw new ExceptionInInitializerError("Driver not registered. " + e);
         }
     }
 
@@ -50,9 +50,22 @@ public class ConnectionPool {
                 LOGGER.error("Error has occurred while creating connection: ", e);
             }
         }
-        if (freeConnections.isEmpty()) {//todo check pool size?
+        if (freeConnections.isEmpty()) {
             LOGGER.fatal("Error: no connections were created");
             throw new RuntimeException("Error: no connections were created");
+        }
+        if (freeConnections.size() < DEFAULT_POOL_SIZE) {
+            int missingConnectionsNumber = DEFAULT_POOL_SIZE - freeConnections.size();
+            for (int j = 0; j < missingConnectionsNumber; j++) {
+                try {
+                    Connection connection = DriverManager.getConnection(url, user, password);
+                    ProxyConnection proxyConnection = new ProxyConnection(connection);
+                    freeConnections.add(proxyConnection);
+                } catch (SQLException e) {
+                    LOGGER.fatal("Connection was not created!", e);
+                    throw new ExceptionInInitializerError("Connection was not created!" + e.getMessage());
+                }
+            }
         }
         LOGGER.info("{} connections were created", freeConnections.size());
     }
@@ -76,29 +89,35 @@ public class ConnectionPool {
         ProxyConnection connection = null;
         try {
             connection = freeConnections.take();
-            usedConnections.put(connection);
-        } catch (InterruptedException e) {//todo log warn threadDeath
+            busyConnections.put(connection);
+        } catch (InterruptedException e) {
             LOGGER.error("Error has occurred while getting connection: ", e);
             Thread.currentThread().interrupt();
         }
         return connection;
     }
 
-    public void releaseConnection(Connection connection) {
-        //todo check connection
-        try {
-            if (usedConnections.remove(connection)) {
-                freeConnections.put((ProxyConnection) connection);
-            }
-        } catch (InterruptedException e) {
-            LOGGER.error("Error has occurred while releasing connection: ", e);
+    public boolean releaseConnection(Connection connection) {
+        if (!(connection instanceof ProxyConnection)) {
+            return false;
         }
+        try {
+            if (busyConnections.remove(connection)) {
+                freeConnections.put((ProxyConnection) connection);
+                return true;
+            }
+        } catch (InterruptedException exception) {
+            LOGGER.error("Error has occurred while releasing connection: " + exception);
+            Thread.currentThread().interrupt();
+        }
+        return false;
     }
 
     public void destroyPool() {
         for (int i = 0; i < DEFAULT_POOL_SIZE; i++) {
             try {
                 freeConnections.take().reallyClose();
+                LOGGER.info("Connection closed.");
             } catch (SQLException | InterruptedException e) {
                 LOGGER.error("Error has occurred while destroying connection pool: ", e);
             }

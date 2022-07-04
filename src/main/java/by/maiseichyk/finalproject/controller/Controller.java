@@ -4,6 +4,7 @@ import java.io.*;
 
 import by.maiseichyk.finalproject.command.CommandType;
 import by.maiseichyk.finalproject.command.Command;
+import by.maiseichyk.finalproject.command.RequestParameter;
 import by.maiseichyk.finalproject.exception.CommandException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
@@ -31,31 +32,23 @@ public class Controller extends HttpServlet {
 
     public void destroy() {
         LOGGER.info("destroyed - " + this.getServletName());
-
     }
 
     private void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
-        String commandStr = request.getParameter("command");
+        String commandStr = request.getParameter(RequestParameter.COMMAND);
         Command command = CommandType.define(commandStr);
         try {
             Router router;
             router = command.execute(request);
             LOGGER.info("get type router " + request.getContextPath() + router.getPage());
             switch (router.getType()) {
-                case FORWARD:
-                    request.getRequestDispatcher(router.getPage()).forward(request, response);
-                    break;
-                case REDIRECT:
-                    response.sendRedirect(request.getContextPath() + router.getPage());
-                    break;
-                default:
-                    response.sendError(500, "Wrong router type.");
-                    break;
+                case FORWARD -> request.getRequestDispatcher(router.getPage()).forward(request, response);
+                case REDIRECT -> response.sendRedirect(request.getContextPath() + router.getPage());
+                default -> response.sendError(500, "Wrong router type.");
             }
         } catch (CommandException e) {
             LOGGER.warn("Cant find command: ", e);
-            request.setAttribute("error", e.getMessage());
             response.sendError(500, e.getMessage());
         }
     }

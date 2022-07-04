@@ -1,8 +1,9 @@
 package by.maiseichyk.finalproject.command.impl.bet;
 
 import by.maiseichyk.finalproject.command.Command;
+import by.maiseichyk.finalproject.command.RequestParameter;
+import by.maiseichyk.finalproject.command.SessionAttribute;
 import by.maiseichyk.finalproject.controller.Router;
-import by.maiseichyk.finalproject.entity.Bet;
 import by.maiseichyk.finalproject.entity.BetStatus;
 import by.maiseichyk.finalproject.entity.SportEvent;
 import by.maiseichyk.finalproject.entity.User;
@@ -17,6 +18,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static by.maiseichyk.finalproject.command.PagePath.*;
@@ -24,15 +27,21 @@ import static by.maiseichyk.finalproject.controller.Router.Type.*;
 
 public class BetCommand implements Command {
     private static final Logger LOGGER = LogManager.getLogger();
+    private static final String BET_ERROR_MESSAGE = "error.bet.add";
+    private static final String BET_SUCCESS_MESSAGE = "confirm.bet.add";
+    private static final String BALANCE_ERROR_MESSAGE = "error.balance.no_funds";
+
     @Override
     public Router execute(HttpServletRequest request) throws CommandException {
         HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
+        User user = (User) session.getAttribute(SessionAttribute.USER);
         SportEventServiceImpl sportEventService = SportEventServiceImpl.getInstance();
-        String chosenTeam = request.getParameter("bet_chosen_team");//todo constant
-        BigDecimal winCoefficient = null;
+        BetService betService = BetServiceImpl.getInstance();
+        String chosenTeam = request.getParameter(RequestParameter.CHOSEN_TEAM);
+        BigDecimal winCoefficient;
+        Map<String, String> betData = new HashMap<>();
         try {
-            Optional<SportEvent> sportEvent = sportEventService.findSportEventById(request.getParameter("event_id"));
+            Optional<SportEvent> sportEvent = sportEventService.findSportEventById(request.getParameter(RequestParameter.EVENT_ID));
             if (sportEvent.isPresent()) {
                 String firstTeam = sportEvent.get().getFirstTeam();
                 String secondTeam = sportEvent.get().getSecondTeam();
@@ -41,42 +50,33 @@ public class BetCommand implements Command {
                 } else if (chosenTeam.equals(secondTeam)) {
                     winCoefficient = sportEvent.get().getSecondTeamRatio();
                 } else {
-                    //error maybe?
+                    session.setAttribute(SessionAttribute.BET_ERROR, BET_ERROR_MESSAGE);
+                    return new Router(BET_ERROR, REDIRECT);
                 }
-            }
-        } catch (ServiceException e) {
-            LOGGER.error("Error while searching event by id. " + e.getMessage());
-        }
-        Bet bet = new Bet.BetBuilder()
-                .setSportEventId(request.getParameter("event_id"))
-                .setUserLogin(request.getParameter("user_login"))
-                .setBetAmount(BigDecimal.valueOf(Long.parseLong(request.getParameter("bet_amount"))))
-                .setBetStatus(BetStatus.PROCESSING)
-                .setChosenTeam(request.getParameter("bet_chosen_team"))
-                .setWinCoefficient(winCoefficient)
-                .build();
-//        BigDecimal betAmount = (BigDecimal) session.getAttribute("bet_amount");
-        BetService betService = BetServiceImpl.getInstance();
-        try {
-            if (betService.checkBalance(user.getLogin(), bet.getBetAmount())) {
-                if (betService.insertBet(bet, user)) {
-                    request.setAttribute("bet_msg", "Success");
-                    session.setAttribute("user", user);
-                    //update bet list session todo
-                    return new Router(BET_SUCCESS, FORWARD);
+                betData.put(RequestParameter.EVENT_ID, request.getParameter(RequestParameter.EVENT_ID));
+                betData.put(RequestParameter.LOGIN, user.getLogin());
+                betData.put(RequestParameter.BET_AMOUNT, request.getParameter(RequestParameter.BET_AMOUNT));
+                betData.put(RequestParameter.BET_STATUS, BetStatus.PROCESSING.toString());
+                betData.put(RequestParameter.CHOSEN_TEAM, request.getParameter(RequestParameter.CHOSEN_TEAM));
+                betData.put(RequestParameter.WIN_COEFFICIENT, winCoefficient.toString());
+                if (betService.checkBalance(betData)) {
+                    if (betService.insertBet(betData, user)) {
+                        request.setAttribute(SessionAttribute.BET_ERROR, BET_SUCCESS_MESSAGE);
+                        session.setAttribute(SessionAttribute.USER, user);
+                        session.setAttribute(SessionAttribute.BETS, betService.findAllUserBetsByLogin(user.getLogin()));
+                        return new Router(BET_SUCCESS, REDIRECT);
+                    } else {
+                        session.setAttribute(SessionAttribute.BET_ERROR, BET_ERROR_MESSAGE);
+                        return new Router(BET_ERROR, REDIRECT);
+                    }
                 } else {
-                    request.setAttribute("bet_msg", "Cant bet due to error");
-                    return new Router(EVENTS, FORWARD);
+                    session.setAttribute(SessionAttribute.BALANCE_ERROR, BALANCE_ERROR_MESSAGE);
                 }
-            } else {
-                request.setAttribute("bet_msg", "You dont have enough money to do this operation. ");
-                return new Router(EVENTS, FORWARD);
             }
         } catch (ServiceException e) {
-            //session + log todo
-            return new Router(ERROR_500, REDIRECT);
+            LOGGER.error("Exception while betting. " + e);
+            throw new CommandException("Exception while betting. ", e);
         }
-        //session + log todo
-//        return new Router(EVENTS, FORWARD);
+        return new Router(EVENTS, FORWARD);
     }
 }

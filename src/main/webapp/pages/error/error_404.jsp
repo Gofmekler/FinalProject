@@ -1,20 +1,23 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: Maksim_Maiseichyk
-  Date: 18.04.2022
-  Time: 13:02
-  To change this template use File | Settings | File Templates.
---%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page isErrorPage="true" contentType="text/html;charset=UTF-8" language="java" %>
+<fmt:setLocale value="${sessionScope.locale}" scope="session"/>
+<fmt:setBundle basename="pagecontent"/>
 <html>
 <head>
-    <title>404</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/error.css" type="text/css"/>
+    <title>Error 404</title>
 </head>
 <body>
-404
-${pageContext.errorData.requestURI}
-${pageContext.errorData.servletName}
-${pageContext.errorData.statusCode}
-${pageContext.errorData.exception}
+<main>
+    <div id="error">
+        <div id="number">
+            <div>404</div>
+            <div>Not Found</div>
+        </div>
+        <div><fmt:message key="error.404.message"/></div>
+        <input type="button" value="<fmt:message key="error.back"/>"
+               onclick="location.href='${pageContext.request.contextPath}/controller?command=go_to_home_page'">
+    </div>
+</main>
 </body>
 </html>

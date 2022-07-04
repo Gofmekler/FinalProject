@@ -4,11 +4,13 @@ import by.maiseichyk.finalproject.util.validator.BankCardValidator;
 
 import java.util.Map;
 
+import static by.maiseichyk.finalproject.command.RequestParameter.*;
+
 public class BankCardValidatorImpl implements BankCardValidator {
     private static final String INCORRECT_VALUE_PARAMETER = "incorrect";
-    private static final String CARD_NUMBER_REGEX = "\\d{4} \\d{4} \\d{4} \\d{4}";
-    private static final String OWNER_NAME_REGEX = "[A-Z ]{3,30}";
-    private static final String EXPIRATION_DATE_REGEX = "(0[1-9]|1[0-2])/(2[2-6])";
+    private static final String CARD_NUMBER_REGEX = "\\d{16}";
+    private static final String OWNER_NAME_REGEX = "[A-Z]{3,30}";
+    private static final String EXPIRATION_DATE_REGEX = "\\d{4}-\\d{2}-\\d{2}";
     private static final String CVV_NUMBER_REGEX = "\\d{3}";
     private static final BankCardValidatorImpl instance = new BankCardValidatorImpl();
 
@@ -42,20 +44,20 @@ public class BankCardValidatorImpl implements BankCardValidator {
     @Override
     public boolean checkCardData(Map<String, String> cardData) {
         boolean isValid = true;
-        if (!checkNumber(cardData.get("cardNumber"))) {
-            cardData.put("cardNumber", cardData.get("cardNumber") + INCORRECT_VALUE_PARAMETER);
+        if (!checkNumber(cardData.get(CARD_NUMBER))) {
+            cardData.put(CARD_NUMBER, cardData.get(CARD_NUMBER) + INCORRECT_VALUE_PARAMETER);
             isValid = false;
         }
-        if (!checkOwnerName(cardData.get("ownerName"))) {
-            cardData.put("ownerName", cardData.get("ownerName") + INCORRECT_VALUE_PARAMETER);
+        if (!checkOwnerName(cardData.get(OWNER_NAME))) {
+            cardData.put(OWNER_NAME, cardData.get(OWNER_NAME) + INCORRECT_VALUE_PARAMETER);
             isValid = false;
         }
-        if (!checkExpirationDate(cardData.get("expirationDate"))) {
-            cardData.put("expirationDate", cardData.get("expirationDate") + INCORRECT_VALUE_PARAMETER);
+        if (!checkExpirationDate(cardData.get(EXPIRATION_DATE))) {
+            cardData.put(EXPIRATION_DATE, cardData.get(EXPIRATION_DATE) + INCORRECT_VALUE_PARAMETER);
             isValid = false;
         }
-        if (!checkCVVNumber(cardData.get("cvvNumber"))) {
-            cardData.put("cvvNumber", cardData.get("cvvNumber") + INCORRECT_VALUE_PARAMETER);
+        if (!checkCVVNumber(cardData.get(CVV_NUMBER))) {
+            cardData.put(CVV_NUMBER, cardData.get(CVV_NUMBER) + INCORRECT_VALUE_PARAMETER);
             isValid = false;
         }
         return isValid;

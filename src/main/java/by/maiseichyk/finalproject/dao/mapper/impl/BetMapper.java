@@ -4,7 +4,6 @@ import by.maiseichyk.finalproject.entity.Bet;
 import by.maiseichyk.finalproject.entity.BetStatus;
 import by.maiseichyk.finalproject.dao.mapper.Mapper;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -12,7 +11,7 @@ import java.util.List;
 
 import static by.maiseichyk.finalproject.dao.ColumnName.*;
 
-public class BetMapper implements Mapper {
+public class BetMapper implements Mapper<Bet> {
     private static final BetMapper instance = new BetMapper();
 
     private BetMapper() {
@@ -27,10 +26,9 @@ public class BetMapper implements Mapper {
         List<Bet> betList = new ArrayList<>();
         while (resultSet.next()) {
             Bet bet = new Bet.BetBuilder()
-                    .setId(resultSet.getString(BET_ID))
-                    .setUserLogin(resultSet.getString(BET_USER_LOGIN))
-                    .setSportEventId(resultSet.getString(BET_EVENT_ID))
-                    .setBetDate(resultSet.getString(BET_DATE))
+                    .setId(resultSet.getInt(BET_ID))
+                    .setUserLogin(resultSet.getString(USER_LOGIN))
+                    .setSportEventId(resultSet.getString(UNIQUE_EVENT_ID))
                     .setBetAmount(resultSet.getBigDecimal(BET_AMOUNT))
                     .setBetStatus(BetStatus.valueOf(resultSet.getString(BET_STATUS)))
                     .setChosenTeam(resultSet.getString(CHOSEN_TEAM))

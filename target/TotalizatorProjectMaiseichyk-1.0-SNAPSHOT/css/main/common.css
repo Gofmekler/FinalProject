@@ -1,0 +1,68 @@
+.input-text {
+    color: #212529;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #bdbdbd;
+    border-radius: 0.25rem;
+    display: block;
+    width: 10%;
+    height: calc(2.25rem + 2px);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.input-info {
+    color: #212529;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #bdbdbd;
+    border-radius: 0.25rem;
+    display: block;
+    width: 10%;
+    height: 1.5rem;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.padding-top {
+    padding-top: 0.5rem;
+}
+
+.align_center {
+    text-align: center;
+}
+
+.random-pic {
+    background-image: url("https://source.unsplash.com/user/c_v_r");
+    background-repeat: repeat;
+    background-size: 115%;
+}
+
+.form_input {
+    height: 40%;
+    width: 100%;
+    background-color: white;
+}
+
+.form_registr {
+    height: 95%;
+    width: 100%;
+    position: relative;
+    background-color: white;
+}
+
+.footer {
+    position: relative;
+    top: 480px;
+    height: 1%;
+    width: 100%;
+    background-color: white;
+}

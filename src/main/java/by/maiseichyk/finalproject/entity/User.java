@@ -6,9 +6,9 @@ import java.util.Objects;
 public class User extends AbstractEntity {
     private String login;
     private String password;
-    private String firstName;
-    private String lastName;
-    private UserType role;
+    private String firstname;
+    private String lastname;
+    private UserRole role;
     private String email;
     private BigDecimal balance;
 
@@ -31,27 +31,27 @@ public class User extends AbstractEntity {
         this.password = password;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getFirstname() {
+        return firstname;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getLastname() {
+        return lastname;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
     }
 
-    public UserType getRole() {
+    public UserRole getRole() {
         return role;
     }
 
-    public void setRole(UserType role) {
+    public void setRole(UserRole role) {
         this.role = role;
     }
 
@@ -78,6 +78,11 @@ public class User extends AbstractEntity {
             user = new User();
         }
 
+        public UserBuilder setId(int id){
+            user.setId(id);
+            return this;
+        }
+
         public UserBuilder setLogin(String login) {
             user.login = login;
             return this;
@@ -87,13 +92,13 @@ public class User extends AbstractEntity {
             return this;
         }
 
-        public UserBuilder setLastName(String lastName) {
-            user.lastName = lastName;
+        public UserBuilder setLastname(String lastname) {
+            user.lastname = lastname;
             return this;
         }
 
         public UserBuilder setName(String name) {
-            user.firstName = name;
+            user.firstname = name;
             return this;
         }
 
@@ -102,7 +107,7 @@ public class User extends AbstractEntity {
             return this;
         }
 
-        public UserBuilder setUserRole(UserType userRole) {
+        public UserBuilder setUserRole(UserRole userRole) {
             user.role = userRole;
             return this;
         }
@@ -122,24 +127,24 @@ public class User extends AbstractEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(login, user.login) && Objects.equals(password, user.password) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && role == user.role && Objects.equals(email, user.email) && Objects.equals(balance, user.balance);
+        return Objects.equals(login, user.login) && Objects.equals(password, user.password) && Objects.equals(firstname, user.firstname) && Objects.equals(lastname, user.lastname) && role == user.role && Objects.equals(email, user.email) && Objects.equals(balance, user.balance);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(login, password, firstName, lastName, role, email, balance);
+        return Objects.hash(login, password, firstname, lastname, role, email, balance);
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("{");
-        sb.append("login='").append(login);
-        sb.append("', password='").append(password);
-        sb.append("', name='").append(firstName);
-        sb.append("', surname='").append(lastName);
-        sb.append(", role=").append(role);
-        sb.append(", balance= ").append(balance);
-        sb.append(", email=").append(email).append("}");
-        return sb.toString();
+        return "User{" +
+                "login='" + login + '\'' +
+                ", password='" + password + '\'' +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", role=" + role +
+                ", email='" + email + '\'' +
+                ", balance=" + balance +
+                '}';
     }
 }

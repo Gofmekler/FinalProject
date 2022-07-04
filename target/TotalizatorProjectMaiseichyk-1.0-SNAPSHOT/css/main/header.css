@@ -1,0 +1,17 @@
+body {
+    margin: 0;
+    background-blend-mode: color;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;;
+    min-height: 100vh;
+}
+
+.language ln{
+    link: white;
+    color: white;
+    display: inline;
+    margin-right: 5px;
+    border: 1px solid #ffffff;
+    padding: 3px;
+}

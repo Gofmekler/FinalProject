@@ -9,14 +9,18 @@ import by.maiseichyk.finalproject.exception.DaoException;
 import by.maiseichyk.finalproject.exception.ServiceException;
 import by.maiseichyk.finalproject.service.BankCardService;
 import by.maiseichyk.finalproject.util.validator.impl.BankCardValidatorImpl;
+import by.maiseichyk.finalproject.util.validator.impl.UserValidatorImpl;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+
+import static by.maiseichyk.finalproject.command.RequestParameter.*;
 
 public class BankCardServiceImpl implements BankCardService {
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final BankCardServiceImpl instance = new BankCardServiceImpl();
 
     private BankCardServiceImpl() {
@@ -27,114 +31,137 @@ public class BankCardServiceImpl implements BankCardService {
     }
 
     @Override
-    public List<BankCard> findAllUsersCards() throws ServiceException {
-        BankCardDaoImpl bankCardDao = new BankCardDaoImpl(false);
-        List<BankCard> bankCardList;
-        try {
-            bankCardList = bankCardDao.findAll();
-        } catch (DaoException e) {
-            //logger
-            throw new ServiceException(e);
-        }
-        return bankCardList;
-    }
-
-    @Override
-    public boolean insertBankCard(Map<String, String> cardData) throws ServiceException {
-        BankCardDaoImpl bankCardDao = new BankCardDaoImpl(false);
+    public boolean insertBankCard(Map<String, String> cardData, String login) throws ServiceException {
+        BankCardDaoImpl bankCardDao = new BankCardDaoImpl(true);
+        Transaction transaction = Transaction.getInstance();
         BankCardValidatorImpl cardValidator = BankCardValidatorImpl.getInstance();
         try {
-            if (cardValidator.checkCardData(cardData)){
+            if (cardValidator.checkCardData(cardData)) {
+                transaction.begin(bankCardDao);
                 BankCard bankCard = new BankCard.BankCardBuilder()
-                        .setCardNumber(Long.parseLong(cardData.get("card_number")))
-                        .setOwnerName(cardData.get("owner_name"))
-                        .setCvvNumber(Integer.parseInt(cardData.get("cvv_number")))
-                        .setExpirationDate(LocalDate.parse(cardData.get("expiration_date")))
+                        .setCardNumber(Long.parseLong(cardData.get(CARD_NUMBER)))
+                        .setOwnerName(cardData.get(OWNER_NAME))
+                        .setCvvNumber(Integer.parseInt(cardData.get(CVV_NUMBER)))
+                        .setExpirationDate(LocalDate.parse(cardData.get(EXPIRATION_DATE)))
                         .build();
                 if (bankCardDao.insert(bankCard)) {
-                    return true;
+                    if (bankCardDao.insertOperation(bankCard.getCardNumber(), login, BigDecimal.ZERO)) {
+                        transaction.commit();
+                        return true;
+                    }
+                    transaction.rollback();
                 }
             }
         } catch (DaoException e) {
-            throw new ServiceException(e);
+            try {
+                transaction.rollback();
+            } catch (DaoException ex) {
+                LOGGER.error("Exception while rollbacking transaction." + e);
+            }
+            LOGGER.error("Exception while adding card." + e);
+            throw new ServiceException("Exception while adding card.", e);
+        } finally {
+            try {
+                transaction.end();
+            } catch (DaoException e) {
+                LOGGER.error("Exception while ending transaction." + e);
+            }
         }
         return false;
     }
 
     @Override
-    public boolean withdrawOnCard(String login, long cardNumber, BigDecimal amount) throws ServiceException {
+    public boolean withdrawToCard(String login, String cardNumber, BigDecimal amount) throws ServiceException {
         UserDaoImpl userDao = new UserDaoImpl(true);
         BankCardDaoImpl cardDao = new BankCardDaoImpl(true);
         UserServiceImpl userService = UserServiceImpl.getInstance();
+        BankCardValidatorImpl cardValidator = BankCardValidatorImpl.getInstance();
+        UserValidatorImpl userValidator = UserValidatorImpl.getInstance();
         Transaction transaction = Transaction.getInstance();
         try {
-            transaction.begin(userDao, cardDao);
-            Optional<User> user = userDao.findUserByLogin(login);
-            Optional<BankCard> bankCard = cardDao.findCardByCardNumber(cardNumber);
-            if (user.isPresent() || bankCard.isPresent()) {
-                if (userService.checkUserBalance(user.get(), amount)) {
-                    BigDecimal cardBalance = bankCard.get().getBalance();
-                    BigDecimal userBalance = user.get().getBalance();
-                    user.get().setBalance(userBalance.subtract(amount));
-                    bankCard.get().setBalance(cardBalance.add(amount));
-                    userDao.updateUserBalance(user.get().getLogin(), user.get().getBalance());
-                    cardDao.updateCardBalance(bankCard.get().getCardNumber(), bankCard.get().getBalance());
-                    transaction.commit();
-                    return true;
+            if (cardValidator.checkNumber(cardNumber) && userValidator.checkLogin(login)) {
+                transaction.begin(userDao, cardDao);
+                Optional<User> user = userDao.findUserByLogin(login);
+                long bankCardNumber = Long.parseLong(cardNumber);
+                Optional<BankCard> bankCard = cardDao.findCardByCardNumber(bankCardNumber);
+                if (user.isPresent() && bankCard.isPresent()) {
+                    if (userService.checkUserBalance(user.get(), amount)) {
+                        BigDecimal cardBalance = bankCard.get().getBalance();
+                        BigDecimal userBalance = user.get().getBalance();
+                        user.get().setBalance(userBalance.subtract(amount));
+                        bankCard.get().setBalance(cardBalance.add(amount));
+                        userDao.updateUserBalance(user.get().getLogin(), user.get().getBalance());
+                        cardDao.updateCardBalance(bankCard.get().getCardNumber(), bankCard.get().getBalance());
+                        if (cardDao.insertOperation(bankCardNumber, login, amount)) {
+                            transaction.commit();
+                            return true;
+                        } else {
+                            transaction.rollback();
+                        }
+                    }
                 }
             }
         } catch (DaoException e) {
-            //logger
+            LOGGER.error("Exception while withdrawing." + e);
             try {
                 transaction.rollback();
             } catch (DaoException ex) {
-                //log
+                LOGGER.error("Exception while rollbacking transaction." + e);
             }
-            throw new ServiceException(e);
+            throw new ServiceException("Exception while withdrawing.", e);
         } finally {
             try {
                 transaction.end();
             } catch (DaoException e) {
-                //log
+                LOGGER.error("Exception while ending transaction." + e);
             }
         }
         return false;
     }
 
     @Override
-    public boolean depositFromCard(String login, long cardNumber, BigDecimal amount) throws ServiceException {
+    public boolean depositFromCard(String login, String cardNumber, BigDecimal amount) throws ServiceException {
         UserDaoImpl userDao = new UserDaoImpl(true);
         BankCardDaoImpl cardDao = new BankCardDaoImpl(true);
+        BankCardValidatorImpl cardValidator = BankCardValidatorImpl.getInstance();
+        UserValidatorImpl userValidator = UserValidatorImpl.getInstance();
         Transaction transaction = Transaction.getInstance();
         try {
-            transaction.begin(userDao, cardDao);
-            Optional<User> user = userDao.findUserByLogin(login);
-            Optional<BankCard> bankCard = cardDao.findCardByCardNumber(cardNumber);
-            if (user.isPresent() || bankCard.isPresent()) {
-                if (checkCardBalance(bankCard.get(), amount)) {
-                    BigDecimal cardBalance = bankCard.get().getBalance();
-                    BigDecimal userBalance = user.get().getBalance();
-                    bankCard.get().setBalance(cardBalance.subtract(amount));
-                    user.get().setBalance(userBalance.add(amount));
-                    userDao.updateUserBalance(user.get().getLogin(), user.get().getBalance());
-                    cardDao.updateCardBalance(bankCard.get().getCardNumber(), bankCard.get().getBalance());
-                    transaction.commit();
-                    return true;
+            if (cardValidator.checkNumber(cardNumber) && userValidator.checkLogin(login)) {
+                transaction.begin(userDao, cardDao);
+                long bankCardNumber = Long.parseLong(cardNumber);
+                Optional<User> user = userDao.findUserByLogin(login);
+                Optional<BankCard> bankCard = cardDao.findCardByCardNumber(Long.parseLong(cardNumber));
+                if (user.isPresent() && bankCard.isPresent()) {
+                    if (checkCardBalance(bankCard.get(), amount)) {
+                        BigDecimal cardBalance = bankCard.get().getBalance();
+                        BigDecimal userBalance = user.get().getBalance();
+                        bankCard.get().setBalance(cardBalance.subtract(amount));
+                        user.get().setBalance(userBalance.add(amount));
+                        userDao.updateUserBalance(user.get().getLogin(), user.get().getBalance());
+                        cardDao.updateCardBalance(bankCard.get().getCardNumber(), bankCard.get().getBalance());
+                        if (cardDao.insertOperation(bankCardNumber, login, amount.negate())) {
+                            transaction.commit();
+                            return true;
+                        } else {
+                            transaction.rollback();
+                        }
+                    }
                 }
             }
         } catch (DaoException e) {
             try {
                 transaction.rollback();
             } catch (DaoException ex) {
-                //logger
+                LOGGER.error("Exception while rollbacking transaction." + e);
             }
-            //log todo
-            throw new ServiceException(e);
+            LOGGER.error("Exception while depositing." + e);
+            throw new ServiceException("Exception while depositing.", e);
         } finally {
             try {
                 transaction.end();
             } catch (DaoException e) {
-                //log
+                LOGGER.error("Exception while ending transaction." + e);
             }
         }
         return false;
@@ -156,38 +183,99 @@ public class BankCardServiceImpl implements BankCardService {
     }
 
     @Override
-    public void updateOwnerName(long cardNumber, String ownerName) throws ServiceException {
+    public boolean updateOwnerName(String cardNumber, String ownerName) throws ServiceException {
         BankCardDaoImpl cardDao = new BankCardDaoImpl(false);
+        BankCardValidatorImpl cardValidator = BankCardValidatorImpl.getInstance();
         try {
-            cardDao.updateOwnerName(cardNumber, ownerName);
-        } catch (DaoException e) {
-            //logger
-            throw new ServiceException(e);
-        }
-    }
-
-    @Override
-    public void updateExpirationDate(long cardNumber, LocalDate date) throws ServiceException {
-        BankCardDaoImpl cardDao = new BankCardDaoImpl(false);
-        try {
-            cardDao.updateExpirationDate(cardNumber, date);
-        } catch (DaoException e) {
-            //logger
-            throw new ServiceException(e);
-        }
-    }
-
-    @Override
-    public void deleteCard(long cardNumber) throws ServiceException {
-        BankCardDaoImpl cardDao = new BankCardDaoImpl(false);
-        try {
-            Optional<BankCard> bankCard = cardDao.findCardByCardNumber(cardNumber);
-            if (bankCard.isPresent()){
-                cardDao.delete(bankCard.get());
+            if (cardValidator.checkOwnerName(ownerName) && cardValidator.checkNumber(cardNumber)) {
+                cardDao.updateOwnerName(Long.parseLong(cardNumber), ownerName);
+                return true;
             }
-        } catch (DaoException e){
-            //logger
-            throw new ServiceException(e);
+        } catch (DaoException e) {
+            LOGGER.error("Exception while updating owner name." + e);
+            throw new ServiceException("Exception while updating owner name.", e);
+        } finally {
+            cardDao.closeConnection();
         }
+        return false;
+    }
+
+    @Override
+    public boolean updateExpirationDate(String cardNumber, String date) throws ServiceException {
+        BankCardDaoImpl cardDao = new BankCardDaoImpl(false);
+        BankCardValidatorImpl cardValidator = BankCardValidatorImpl.getInstance();
+        try {
+            if (cardValidator.checkExpirationDate(date) && cardValidator.checkNumber(cardNumber)) {
+                long bankCardNumber = Long.parseLong(cardNumber);
+                LocalDate localDate = LocalDate.parse(date);
+                if (cardDao.updateExpirationDate(bankCardNumber, localDate)) {
+                    return true;
+                }
+            }
+        } catch (DaoException e) {
+            LOGGER.error("Exception while updating date." + e);
+            throw new ServiceException("Exception while updating date.", e);
+        } finally {
+            cardDao.closeConnection();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteCard(String cardNumber) throws ServiceException {
+        BankCardDaoImpl cardDao = new BankCardDaoImpl(false);
+        BankCardValidatorImpl cardValidator = BankCardValidatorImpl.getInstance();
+        try {
+            if (cardValidator.checkNumber(cardNumber)) {
+                long bankCardNumber = Long.parseLong(cardNumber);
+                Optional<BankCard> bankCard = cardDao.findCardByCardNumber(bankCardNumber);
+                if (bankCard.isPresent()) {
+                    if (cardDao.delete(bankCard.get())) {
+                        return true;
+                    }
+                }
+            }
+        } catch (DaoException e) {
+            LOGGER.error("Exception while deleting card." + e);
+            throw new ServiceException("Exception while deleting card.", e);
+        } finally {
+            cardDao.closeConnection();
+        }
+        return false;
+    }
+
+    @Override
+    public List<Map<String, BigDecimal>> findUserOperations(String login) throws ServiceException {
+        BankCardDaoImpl cardDao = new BankCardDaoImpl(false);
+        UserValidatorImpl userValidator = UserValidatorImpl.getInstance();
+        List<Map<String, BigDecimal>> operationList;
+        try {
+            if (userValidator.checkLogin(login)) {
+                operationList = cardDao.findUserOperations(login);
+                if (!operationList.isEmpty()) {
+                    return operationList;
+                }
+            }
+        } catch (DaoException e) {
+            LOGGER.error("Exception while updating owner name." + e);
+            throw new ServiceException("Exception while searching users operations. ", e);
+        }
+        return null;
+    }
+
+    @Override
+    public List<Map<String, BigDecimal>> findAllOperations() throws ServiceException {
+        BankCardDaoImpl cardDao = new BankCardDaoImpl(false);
+        List<Map<String, BigDecimal>> operationList;
+        try {
+            operationList = cardDao.findAllOperations();
+            if (!operationList.isEmpty()) {
+                return operationList;
+            }
+        } catch (DaoException e) {
+            LOGGER.error("Exception while searching operations." + e);
+            throw new ServiceException("Exception while searching operations. ", e);
+        }
+        return null;
     }
 }
